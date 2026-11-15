@@ -17,3 +17,6 @@ __pycache__/
 
 # Téléchargements yt-dlp
 downloads/
+
+# Exports L'Hebdo (scripts + trailers)
+exports/

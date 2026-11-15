@@ -28,12 +28,14 @@ def init_db():
         """)
 
 
-def upsert_news(item: dict):
+def upsert_news(item: dict) -> bool:
+    """Ajoute la news si elle n'existe pas déjà. Renvoie True si elle a été ajoutée."""
     with get_conn() as conn:
-        conn.execute("""
+        cur = conn.execute("""
             INSERT OR IGNORE INTO news (id, title, url, source, published, summary, score, tags)
             VALUES (:id, :title, :url, :source, :published, :summary, :score, :tags)
         """, item)
+        return cur.rowcount == 1
 
 
 def get_news(status: str | None = None, min_score: int = 0):

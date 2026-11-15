@@ -1,0 +1,19 @@
+# Environnement virtuel
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Base SQLite locale
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets
+.env
+.streamlit/secrets.toml
+
+# Téléchargements yt-dlp
+downloads/

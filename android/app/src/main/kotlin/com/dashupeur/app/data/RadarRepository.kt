@@ -207,7 +207,8 @@ object RadarRepository {
 
     val body = HttpUtils.getText(STEAM_SEARCH_URL, params)
     val html = JSONObject(body).optString("results_html", "")
-    val rowRegex = Regex("""<a[^>]*class="[^"]*search_result_row[^"]*"[^>]*data-ds-appid="([^"]+)"[^>]*>(.*?)</a>""", setOf(RegexOption.DOT_MATCHES_ALL))
+    // Steam écrit data-ds-appid avant class="search_result_row" : on ne dépend pas de l'ordre des attributs
+    val rowRegex = Regex("""<a\s[^>]*?data-ds-appid="([^"]+)"[^>]*>(.*?)</a>""", setOf(RegexOption.DOT_MATCHES_ALL))
     val titleRegex = Regex("""<span class="title"[^>]*>(.*?)</span>""", setOf(RegexOption.DOT_MATCHES_ALL))
     val imgRegex = Regex("""<img[^>]*src="([^"]+)"[^>]*>""")
     val relRegex = Regex("""search_released[^>]*>(.*?)</div>""", setOf(RegexOption.DOT_MATCHES_ALL))
@@ -253,12 +254,17 @@ object RadarRepository {
 
   suspend fun fetchSteamF2p(maxAgeDays: Long = 365, limit: Int = 25): List<RadarItem> = withContext(Dispatchers.IO) {
     val found = linkedMapOf<String, RadarItem>()
+    var lastError: Throwable? = null
     for (params in listOf(mapOf("filter" to "popularnew", "count" to "50"), mapOf("count" to "100"))) {
-      runCatching { steamSearch(params) }.getOrDefault(emptyList()).forEach { item ->
-        val id = item.steamAppId ?: return@forEach
-        if (!found.containsKey(id)) found[id] = item
-      }
+      runCatching { steamSearch(params) }
+        .onFailure { lastError = it }
+        .getOrDefault(emptyList()).forEach { item ->
+          val id = item.steamAppId ?: return@forEach
+          if (!found.containsKey(id)) found[id] = item
+        }
     }
+    // Si Steam n'a rien renvoyé à cause d'une erreur, on la remonte au lieu d'afficher une liste vide
+    if (found.isEmpty()) lastError?.let { throw it }
     val now = Instant.now()
     val recent = found.values.filter { item ->
       item.starts != null && ChronoUnit.DAYS.between(item.starts, now) <= maxAgeDays

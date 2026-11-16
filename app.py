@@ -95,11 +95,23 @@ tab_inbox, tab_hebdo, tab_radar, tab_trends = st.tabs(
 
 # --- ONGLET 1 : TRI DES NEWS ---
 with tab_inbox:
-    search = st.text_input("🔍 Filtrer par mot-clé (ex: MMO, Steam, gratuit...)")
+    col_search, col_sort = st.columns([3, 1])
+    search = col_search.text_input("🔍 Filtrer par mot-clé (ex: MMO, Steam, gratuit...)")
+    sort_by = col_sort.selectbox(
+        "↕️ Trier par",
+        ["🔥 Pertinence", "🕒 Plus récentes", "🕰️ Plus anciennes"],
+        key="inbox_sort",
+    )
     filtered = [
         n for n in inbox_items
         if not search or search.lower() in (n["title"] + n["summary"] + n["tags"]).lower()
     ]
+    if sort_by != "🔥 Pertinence":
+        # Les news sans date connue restent toujours en fin de liste
+        dated = [n for n in filtered if parse_published(n["published"])]
+        undated = [n for n in filtered if not parse_published(n["published"])]
+        dated.sort(key=lambda n: parse_published(n["published"]), reverse=(sort_by == "🕒 Plus récentes"))
+        filtered = dated + undated
 
     if not filtered:
         st.info("Aucune news dans la boîte de réception. Clique sur 'Scanner l'actualité' à gauche !")

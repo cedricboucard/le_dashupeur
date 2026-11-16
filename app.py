@@ -1,9 +1,10 @@
+from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
 
 from db import clear_inbox, get_news, init_db, update_status
-from engine import export_hebdo, fetch_all_feeds
+from engine import export_hebdo, fetch_all_feeds, parse_published
 
 ICON_PATH = Path(__file__).parent / "assets" / "favicon.png"
 
@@ -13,6 +14,23 @@ st.set_page_config(
     layout="wide",
 )
 init_db()
+
+
+def format_age(published: str) -> str:
+    """Date de publication lisible d'un coup d'œil : « aujourd'hui 14:32 », « il y a 4 jours »…"""
+    dt = parse_published(published)
+    if not dt:
+        return "date inconnue"
+    local = dt.astimezone()
+    days = (datetime.now().astimezone().date() - local.date()).days
+    if days <= 0:
+        return f"🆕 aujourd'hui {local:%H:%M}"
+    if days == 1:
+        return f"hier {local:%H:%M}"
+    if days < 7:
+        return f"il y a {days} jours ({local:%d/%m})"
+    return f"{local:%d/%m/%Y}"
+
 
 st.title("🎮 Le Dashupeur — Régie d'Actualité Gaming")
 st.caption("Veille automatisée, tri de l'Hebdo, scripts et récupération de trailers.")
@@ -82,8 +100,12 @@ with tab_inbox:
             with col1:
                 badge = f"🔥 Score: {item['score']}" if item["score"] >= 15 else f"Score: {item['score']}"
                 st.markdown(f"**[{item['title']}]({item['url']})**")
-                st.caption(f"{item['source']} • {badge} • Tags: `{item['tags'] or 'aucun'}`")
-                st.write(item["summary"][:280] + ("..." if len(item["summary"]) > 280 else ""))
+                st.caption(
+                    f"🕒 {format_age(item['published'])} • {item['source']} • {badge} • "
+                    f"Tags: `{item['tags'] or 'aucun'}`"
+                )
+                if item["summary"]:
+                    st.write(item["summary"][:280] + ("..." if len(item["summary"]) > 280 else ""))
             with col2:
                 if st.button("🔥 Gros Sujet", key=f"maj_{item['id']}", use_container_width=True):
                     update_status(item["id"], "major")

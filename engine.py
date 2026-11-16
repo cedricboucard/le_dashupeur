@@ -1,6 +1,7 @@
 import hashlib
 import re
-from datetime import datetime
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from pathlib import Path
 
 import feedparser
@@ -14,11 +15,42 @@ from db import upsert_news
 EXPORTS_DIR = Path(__file__).parent / "exports"
 
 
+URL_RE = re.compile(r"https?://\S+")
+# Pied de page ajouté par Reddit : "submitted by /u/pseudo [link] [comments]"
+REDDIT_FOOTER_RE = re.compile(r"submitted by\s+/u/\S+(\s*\[link\])?(\s*\[comments\])?", re.IGNORECASE)
+
+
 def clean_html(raw_html: str) -> str:
     if not raw_html:
         return ""
     text = BeautifulSoup(raw_html, "html.parser").get_text(separator=" ")
+    text = REDDIT_FOOTER_RE.sub(" ", text)
+    text = URL_RE.sub(" ", text)
     return re.sub(r"\s+", " ", text).strip()[:600]
+
+
+def parse_published(value) -> datetime | None:
+    """Convertit une date de flux (ISO ou format RSS) en datetime avec fuseau (UTC par défaut)."""
+    if not value:
+        return None
+    if isinstance(value, str):
+        try:
+            dt = datetime.fromisoformat(value)
+        except ValueError:
+            try:
+                dt = parsedate_to_datetime(value)
+            except (TypeError, ValueError):
+                return None
+    else:  # struct_time fourni par feedparser (toujours en UTC)
+        dt = datetime(*value[:6])
+    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
+
+
+def entry_published_iso(entry) -> str:
+    """Date de publication d'une entrée de flux, au format ISO (vide si inconnue)."""
+    parsed = entry.get("published_parsed") or entry.get("updated_parsed")
+    dt = parse_published(parsed) or parse_published(entry.get("published", ""))
+    return dt.isoformat() if dt else ""
 
 
 def score_article(title: str, summary: str) -> tuple[int, list[str]]:
@@ -59,7 +91,7 @@ def fetch_all_feeds() -> tuple[int, list[str]]:
                     "title": title,
                     "url": url,
                     "source": source_name,
-                    "published": entry.get("published", "")[:25],
+                    "published": entry_published_iso(entry),
                     "summary": summary,
                     "score": score,
                     "tags": ", ".join(tags),

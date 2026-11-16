@@ -388,12 +388,17 @@ if tab_trends.open:
                 f"Pas encore assez d'historique pour la période {period} : il faut un relevé datant "
                 f"d'environ {period}. Le classement apparaîtra automatiquement à ce moment-là."
             )
-            top = latest_snapshot(("twitch", "steam"), limit=15)
-            if top:
-                st.subheader("🎯 En attendant : les plus joués et regardés en ce moment")
-                for row in top:
-                    st.markdown(f"- **[{row['game_name']}]({row['url']})** — {fmt_int(row['value'])} "
-                                f"{UNITS[row['source']]} ({SOURCE_LABELS[row['source']]})")
+            # Un top par source : spectateurs, joueurs et vues ne se comparent pas entre eux
+            tops = {source: latest_snapshot((source,), limit=10) for source in ("twitch", "steam", "youtube")}
+            if any(tops.values()):
+                st.subheader("🎯 En attendant : le top du moment, source par source")
+                for col, (source, rows) in zip(st.columns(3), tops.items()):
+                    with col:
+                        st.markdown(f"**{SOURCE_LABELS[source]}** · {UNITS[source]}")
+                        if not rows:
+                            st.caption("Aucun relevé pour l'instant.")
+                        for rank, row in enumerate(rows, start=1):
+                            st.markdown(f"{rank}. [{row['game_name']}]({row['url']}) — {fmt_int(row['value'])}")
         else:
             rising = [g for g in trends_list if g["score"] is None or g["score"] >= min_growth][:30]
             st.subheader(f"🚀 Ça monte ({len(rising)})")

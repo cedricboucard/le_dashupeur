@@ -26,3 +26,8 @@ logs/
 
 # Documents personnels (ex. Clés.odt) : jamais sur GitHub
 *.odt
+
+# Android : APK générés (publiés dans les releases GitHub) et caches
+*.apk
+android/.kotlin/
+android/.idea/

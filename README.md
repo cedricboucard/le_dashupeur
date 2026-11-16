@@ -158,6 +158,33 @@ Adapte le chemin si le projet est ailleurs. Le journal des relevés est dans `lo
 
 ---
 
+## 📱 Application Android
+
+Le Dashupeur existe aussi en application Android native (Kotlin + Jetpack Compose), avec les mêmes onglets : **Actus**, **Radar F2P**, **Tendances** et **Hebdo**.
+
+### Installer l'APK
+
+1. Depuis ton téléphone, ouvre la [dernière release](https://github.com/cedricboucard/le_dashupeur/releases/latest) et télécharge **LeDashupeur-vX.Y.apk**.
+2. Ouvre le fichier et autorise l'installation depuis cette source quand Android le demande.
+3. Lance **Le Dashupeur**. Les clés Twitch et YouTube se saisissent dans l'app (icône 🔑) et restent sur le téléphone.
+
+Android 8.0 ou plus récent requis.
+
+### Construire l'APK soi-même
+
+Prérequis : JDK 17 et le SDK Android (installé avec Android Studio).
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+L'APK est généré dans `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+> Optionnel : copie ta base `dashupeur.db` dans `android/app/src/main/assets/` pour que l'app démarre avec tes news. Sans elle, l'app démarre avec une base vide.
+
+---
+
 ## 🤖 Résumés par IA (optionnel)
 
 Sans IA, l'application fonctionne normalement : le script reprend simplement le résumé fourni par le flux RSS.
@@ -206,6 +233,7 @@ le_dashupeur/
 ├── config.py     # Flux RSS, mots-clés et pondération
 ├── requirements.txt  # Dépendances Python
 ├── LICENSE       # Licence MIT
+├── android/      # Application Android (Kotlin + Jetpack Compose)
 └── assets/
     ├── icon.png       # Icône du projet (512 px)
     ├── favicon.png    # Icône de l'onglet du navigateur (64 px)

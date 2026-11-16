@@ -25,7 +25,7 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 
 | | |
 |---|---|
-| 📡 **Veille RSS** | Scan de 6 sources (MassivelyOP, MMORPG.com, ActuGaming, PC Gamer, Rock Paper Shotgun, Reddit r/MMORPG). Les doublons sont ignorés automatiquement. |
+| 📡 **Veille RSS** | Scan de 18 sources : presse MMO et jeu vidéo (MassivelyOP, MMORPG.com, Jeuxvideo.com, Gamekult, ActuGaming, PC Gamer, PCGamesN, Rock Paper Shotgun, Gematsu, Reddit r/MMORPG) et **chaînes YouTube** de trailers et de jeux (IGN, GameSpot, GameTrailers, PlayStation, Xbox, chaînes de trailers indés, The First Descendant). Les doublons sont ignorés automatiquement. |
 | 🎯 **Score de pertinence** | Chaque news gagne des points selon les mots-clés trouvés (MMORPG, free-to-play, bêta, shutdown…). Les news à 15 points ou plus sont marquées 🔥. |
 | 📥 **Boîte de réception** | Filtre par score minimum ou par mot-clé, puis classe chaque news en **🔥 Gros Sujet**, **⚡ En Vrac** ou **🗑️ Ignorer**. |
 | 🎬 **Pack de L'Hebdo** | Génère un dossier daté avec le script, la description YouTube (chapitres + sources) et un sous-dossier par gros sujet. |
@@ -205,6 +205,13 @@ ollama pull llama3
 Tout se règle dans [`config.py`](config.py) :
 
 - **`RSS_FEEDS`** : ajoute ou retire des sources (`"Nom affiché": "URL du flux"`).
+- **Suivre une chaîne YouTube** (trailers officiels d'un jeu, chaîne d'éditeur…) : ajoute une ligne avec l'identifiant de la chaîne (il commence par `UC`, visible dans l'adresse de la chaîne ou via « Partager la chaîne → Copier l'identifiant ») :
+
+  ```python
+  "YouTube · Nom du jeu": YOUTUBE_FEED.format("UCxxxxxxxxxxxxxxxxxxxxxx"),
+  ```
+
+  Gratuit et sans clé, mais le flux d'une chaîne ne contient que ses 15 dernières vidéos : scanne au moins une fois par jour.
 - **`KEYWORDS_WEIGHTS`** : ajoute des mots-clés et leur poids. Plus le poids est élevé, plus une news qui contient ce mot remonte.
 
 ```python

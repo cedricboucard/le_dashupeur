@@ -160,7 +160,7 @@ object NewsEngine {
               "title" -> title += text
               "link" -> if (url.isBlank()) url += text.trim()
               "pubdate", "published", "updated", "dc:date" -> if (published.isBlank()) published += text.trim()
-              "description", "summary", "content", "content:encoded" -> rawSummary += text
+              "description", "summary", "content", "content:encoded", "media:description" -> rawSummary += text
             }
           }
         }

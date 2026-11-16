@@ -5,7 +5,9 @@ import streamlit as st
 
 from db import clear_inbox, get_news, init_db, update_status
 from engine import export_hebdo, fetch_all_feeds, parse_published
-from radar import fetch_epic_free, fetch_gamerpower, fetch_steam_f2p, radar_news_id, send_to_hebdo
+from radar import _item, fetch_epic_free, fetch_gamerpower, fetch_steam_f2p, radar_news_id, send_to_hebdo
+from trends import (SOURCE_LABELS, UNITS, active_sources, collect_all, compute_trends, history,
+                    latest_snapshot, snapshot_times, trend_summary)
 
 ICON_PATH = Path(__file__).parent / "assets" / "favicon.png"
 
@@ -85,8 +87,8 @@ st.markdown(
 )
 
 # Libellés fixes + key : l'onglet ouvert reste le même après un clic
-tab_inbox, tab_hebdo, tab_radar = st.tabs(
-    ["📥 Boîte de réception", "🎬 Préparer l'Hebdo", "🎁 Radar Jeux Gratuits & F2P"],
+tab_inbox, tab_hebdo, tab_radar, tab_trends = st.tabs(
+    ["📥 Boîte de réception", "🎬 Préparer l'Hebdo", "🎁 Radar Jeux Gratuits & F2P", "📈 Tendances"],
     key="main_tab",
     on_change="rerun",
 )
@@ -288,3 +290,114 @@ if tab_radar.open:
             with sub_steam:
                 st.caption("Free-to-Play sortis sur Steam ces 12 derniers mois, classés par joueurs connectés en direct.")
                 render_radar_source("steam", "steam", in_hebdo, "Aucun Free-to-Play récent trouvé.")
+
+# --- ONGLET 4 : DÉTECTEUR DE TENDANCES ---
+def fmt_int(n: int) -> str:
+    return f"{n:,}".replace(",", " ")
+
+
+def render_trend_item(game: dict, window_hours: int, in_hebdo: dict):
+    item = _item(
+        title=game["name"], url=game["url"], source="Tendances", kind="📈 Tendance",
+        image=game["image"], summary=trend_summary(game, window_hours),
+    )
+    news_id = radar_news_id(item)
+    with st.container(border=True):
+        col_img, col_txt, col_btn = st.columns([1, 4, 1])
+        with col_img:
+            if game["image"]:
+                st.image(game["image"], width="stretch")
+        with col_txt:
+            badge = "🆕 Nouveau venu" if game["score"] is None else f"🚀 {game['score']:+.0f} %"
+            st.markdown(f"**[{game['name']}]({game['url']})** · {badge}")
+            parts = []
+            for source, s in game["sources"].items():
+                growth = "nouveau" if s["growth"] is None else f"{s['growth']:+.0f} %"
+                parts.append(f"{SOURCE_LABELS[source]} {fmt_int(s['now'])} {UNITS[source]} ({growth})")
+            st.caption(" • ".join(parts))
+            series = history(game["key"], days=7)
+            if any(len(points) > 1 for points in series.values()):
+                import pandas as pd
+                chart = pd.DataFrame({
+                    SOURCE_LABELS[src]: pd.Series({t.astimezone(): v for t, v in points})
+                    for src, points in series.items()
+                })
+                st.line_chart(chart, height=140)
+        with col_btn:
+            status = in_hebdo.get(news_id)
+            if status:
+                st.success("✅ Gros sujet" if status == "major" else "✅ En vrac")
+                return
+            for label, new_status in (("🔥 Gros Sujet", "major"), ("⚡ En Vrac", "vrac")):
+                if st.button(label, key=f"trend_{new_status}_{news_id}", use_container_width=True):
+                    send_to_hebdo(item, new_status)
+                    where = "gros sujets" if new_status == "major" else "news en vrac"
+                    st.session_state["trends_flash"] = f"« {game['name']} » ajouté aux {where} de L'Hebdo."
+                    st.rerun()
+
+
+if tab_trends.open:
+    with tab_trends:
+        in_hebdo = {n["id"]: "major" for n in major_items} | {n["id"]: "vrac" for n in vrac_items}
+        active = active_sources()
+
+        # État des sources
+        cols = st.columns(3)
+        for col, source in zip(cols, ("twitch", "steam", "youtube")):
+            times = snapshot_times(source)
+            if not active[source]:
+                col.warning(f"{SOURCE_LABELS[source]} : clé manquante")
+            elif times:
+                last = times[-1].astimezone()
+                col.success(f"{SOURCE_LABELS[source]} : {len(times)} relevé(s), dernier le {last:%d/%m à %H:%M}")
+            else:
+                col.info(f"{SOURCE_LABELS[source]} : aucun relevé pour l'instant")
+
+        if not (active["twitch"] and active["youtube"]):
+            with st.expander("🔑 Ajouter les clés Twitch / YouTube"):
+                st.markdown(
+                    "Crée un fichier **`.env`** dans le dossier du projet (il n'est jamais envoyé sur GitHub) :\n"
+                    "```\nTWITCH_CLIENT_ID=ton_client_id\nTWITCH_CLIENT_SECRET=ton_secret\n"
+                    "YOUTUBE_API_KEY=ta_cle_youtube\n```\n"
+                    "Les clés sont prises en compte au prochain relevé. Le guide complet est dans le README."
+                )
+
+        col_btn, col_hint = st.columns([1, 3])
+        if col_btn.button("📸 Faire un relevé maintenant", use_container_width=True):
+            with st.spinner("Relevé en cours (jusqu'à une minute)..."):
+                report = collect_all()
+            st.session_state["trends_flash"] = "Relevé terminé — " + " | ".join(
+                f"{SOURCE_LABELS[s]} : {r} jeux" if isinstance(r, int) else f"{SOURCE_LABELS[s]} : {r}"
+                for s, r in report.items()
+            )
+            st.rerun()
+        col_hint.caption("Les relevés automatiques ont lieu toutes les 3 h (tâche planifiée). "
+                         "Les tendances comparent au relevé d'il y a 24 h ou 7 jours, à la même heure.")
+
+        if "trends_flash" in st.session_state:
+            st.success(st.session_state.pop("trends_flash"))
+
+        col_win, col_min = st.columns(2)
+        period = col_win.segmented_control("Période", ["24 h", "7 jours"], default="24 h", key="trend_period")
+        window_hours = 168 if period == "7 jours" else 24
+        min_growth = col_min.slider("Hausse minimum", 10, 300, 25, step=5, format="%d %%", key="trend_min")
+
+        trends_list = compute_trends(window_hours)
+        if not trends_list:
+            st.info(
+                f"Pas encore assez d'historique pour la période {period} : il faut un relevé datant "
+                f"d'environ {period}. Le classement apparaîtra automatiquement à ce moment-là."
+            )
+            top = latest_snapshot(("twitch", "steam"), limit=15)
+            if top:
+                st.subheader("🎯 En attendant : les plus joués et regardés en ce moment")
+                for row in top:
+                    st.markdown(f"- **[{row['game_name']}]({row['url']})** — {fmt_int(row['value'])} "
+                                f"{UNITS[row['source']]} ({SOURCE_LABELS[row['source']]})")
+        else:
+            rising = [g for g in trends_list if g["score"] is None or g["score"] >= min_growth][:30]
+            st.subheader(f"🚀 Ça monte ({len(rising)})")
+            if not rising:
+                st.info("Aucun jeu ne dépasse ce seuil de hausse. Baisse le curseur « Hausse minimum ».")
+            for game in rising:
+                render_trend_item(game, window_hours, in_hebdo)

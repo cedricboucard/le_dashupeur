@@ -15,6 +15,8 @@ Le Dashupeur récupère les flux RSS de plusieurs sites gaming, donne un score d
 
 Il intègre aussi un **🎁 Radar Jeux Gratuits & F2P**, connecté en temps réel à l'Epic Games Store, GamerPower et Steam : un clic suffit pour envoyer un jeu offert ou un nouveau Free-to-Play dans ton conducteur de L'Hebdo.
 
+Et un **📈 Détecteur de tendances** qui suit Twitch, Steam et YouTube toutes les 3 heures pour repérer les jeux qui explosent avant tout le monde.
+
 Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite locale.
 
 ---
@@ -31,6 +33,7 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 | 🤖 **Résumés IA** | Traduit et résume chaque gros sujet en 3 points percutants, prêts pour le script vidéo. |
 | 🎁 **Radar Jeux Gratuits & F2P** | En temps réel : jeux gratuits de l'**Epic Games Store** (maintenant + semaine prochaine), jeux/DLC/bêtas offerts via **GamerPower** (Steam, GOG, Epic, Itch.io…) et nouveaux **Free-to-Play Steam** classés par joueurs connectés en direct. |
 | 🔗 **Pont vers L'Hebdo** | Depuis le Radar, **🔥 Gros Sujet** ou **⚡ En Vrac** envoie le jeu dans le conducteur, avec son résumé (valeur, date de fin de l'offre, joueurs en ligne) pour le script et le trailer. |
+| 📈 **Détecteur de tendances** | Relevé automatique toutes les 3 h des spectateurs **Twitch**, des joueurs **Steam** et des vues **YouTube** de chaque jeu. Classement « 🚀 Ça monte » par croissance sur 24 h ou 7 jours, repérage des 🆕 nouveaux venus, mini-courbes, et envoi direct vers L'Hebdo. |
 
 ---
 
@@ -74,6 +77,7 @@ L'application s'ouvre dans ton navigateur sur **http://localhost:8501**.
 1. **Scanner** : dans la barre latérale, clique sur **🔄 Scanner l'actualité**. Le nombre de nouvelles news s'affiche, ainsi que les flux en erreur s'il y en a.
 2. **Trier** : dans l'onglet **📥 Boîte de réception**, classe chaque news. Chaque news affiche sa date de publication (« aujourd'hui », « il y a 3 jours »…). Le curseur « Score de pertinence minimum » et la recherche par mot-clé t'aident à aller à l'essentiel.
 3. **Piocher dans le Radar** (optionnel) : dans l'onglet **🎁 Radar Jeux Gratuits & F2P**, parcours les sous-onglets Epic Games Store, GamerPower et Steam Free-to-Play, puis envoie les jeux qui t'intéressent dans L'Hebdo. Les données sont gardées 10 minutes ; **🔄 Actualiser** force une nouvelle interrogation.
+   Dans l'onglet **📈 Tendances**, repère les jeux qui décollent et envoie-les aussi dans L'Hebdo.
 4. **Vérifier** : dans l'onglet **🎬 Préparer l'Hebdo**, relis ta sélection. Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
 5. **Générer** : coche si besoin le téléchargement des trailers, puis clique sur **🚀 Générer le pack de L'Hebdo**.
 6. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets et news en vrac sont conservés.
@@ -91,6 +95,66 @@ exports/
 ```
 
 > Les chapitres sont espacés de 3 minutes par défaut (`03:00`, `06:00`…). Ajuste-les dans la description après le montage.
+
+---
+
+## 📈 Détecteur de tendances
+
+### Comment ça marche
+
+Toutes les 3 heures, une tâche planifiée relève pour chaque jeu :
+
+| Source | Mesure | Clé |
+|---|---|---|
+| 🎮 **Steam** | Joueurs connectés en direct (top 100 + nouveautés Free-to-Play populaires) | Aucune |
+| 🟣 **Twitch** | Spectateurs cumulés des 100 plus gros lives du jeu (200 catégories les plus regardées) | Gratuite |
+| 🔴 **YouTube** | Vues des vidéos du jeu publiées ces 7 derniers jours (40 jeux, 1 relevé par jour) | Gratuite |
+
+L'onglet **📈 Tendances** compare le dernier relevé à celui d'**il y a 24 h ou 7 jours, à la même heure** (pour ne pas confondre une vraie hausse avec le pic du soir). Les petits chiffres sont ignorés (passer de 2 à 10 spectateurs ne veut rien dire).
+
+> Le classement apparaît **24 h après le premier relevé** (7 jours pour la vue hebdomadaire). En attendant, l'onglet affiche les jeux les plus joués et regardés du moment.
+
+Sans clé, le détecteur fonctionne déjà avec Steam. Twitch et YouTube s'ajoutent dès que leurs clés sont dans le fichier `.env`.
+
+### Obtenir les clés (gratuites)
+
+Copie d'abord le modèle :
+
+```bash
+cp .env.example .env
+```
+
+**🟣 Twitch**
+
+1. Active la double authentification sur ton compte Twitch (obligatoire pour les développeurs).
+2. Va sur [dev.twitch.tv/console](https://dev.twitch.tv/console) → **Register Your Application**.
+3. Nom : au choix (ex. `Le Dashupeur`), URL de redirection OAuth : `http://localhost`, catégorie : **Analytics Tool**, type de client : **Confidentiel**.
+4. Ouvre l'application créée (**Manage**) : copie le **Client ID**, puis clique sur **New Secret** et copie le secret.
+5. Colle-les dans `.env` (`TWITCH_CLIENT_ID=` et `TWITCH_CLIENT_SECRET=`).
+
+**🔴 YouTube**
+
+1. Va sur [console.cloud.google.com](https://console.cloud.google.com) et crée un projet (ex. `le-dashupeur`).
+2. **API et services → Bibliothèque** : cherche **YouTube Data API v3** et clique sur **Activer**.
+3. **API et services → Identifiants → Créer des identifiants → Clé API**.
+4. Conseillé : modifie la clé et restreins-la à « YouTube Data API v3 ».
+5. Colle-la dans `.env` (`YOUTUBE_API_KEY=`).
+
+> Le quota gratuit de YouTube est de 10 000 unités par jour ; le détecteur en utilise environ 4 000.
+
+### La tâche planifiée
+
+Le relevé est lancé par `cron` toutes les 3 heures :
+
+```bash
+crontab -e
+```
+
+```
+0 */3 * * * cd /home/cedric/le_dashupeur && venv/bin/python collect_trends.py >> logs/trends.log 2>&1
+```
+
+Adapte le chemin si le projet est ailleurs. Le journal des relevés est dans `logs/trends.log`. Tu peux aussi lancer un relevé à la main avec le bouton **📸 Faire un relevé maintenant**.
 
 ---
 
@@ -135,6 +199,9 @@ le_dashupeur/
 ├── app.py        # Interface web Streamlit
 ├── engine.py     # Scan RSS, score, résumés IA, trailers et export
 ├── radar.py      # Radar Jeux Gratuits & F2P (Epic, GamerPower, Steam)
+├── trends.py     # Détecteur de tendances (relevés + calcul)
+├── collect_trends.py  # Relevé lancé par la tâche planifiée
+├── .env.example  # Modèle pour les clés Twitch / YouTube
 ├── db.py         # Base SQLite locale (dashupeur.db)
 ├── config.py     # Flux RSS, mots-clés et pondération
 ├── requirements.txt  # Dépendances Python
@@ -148,7 +215,9 @@ le_dashupeur/
 Créés automatiquement au premier lancement, et ignorés par git :
 
 - `dashupeur.db` : la base des news ;
-- `exports/` : les packs de L'Hebdo.
+- `exports/` : les packs de L'Hebdo ;
+- `logs/` : le journal des relevés de tendances ;
+- `.env` : tes clés API.
 
 ---
 

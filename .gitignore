@@ -20,3 +20,9 @@ downloads/
 
 # Exports L'Hebdo (scripts + trailers)
 exports/
+
+# Journaux de la tâche planifiée
+logs/
+
+# Documents personnels (ex. Clés.odt) : jamais sur GitHub
+*.odt

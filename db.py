@@ -26,6 +26,23 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        # Relevés du détecteur de tendances (un relevé = une ligne par jeu et par source)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS trend_snapshots (
+                taken_at TEXT NOT NULL,
+                source TEXT NOT NULL,
+                game_key TEXT NOT NULL,
+                game_name TEXT NOT NULL,
+                value INTEGER NOT NULL,
+                url TEXT,
+                image TEXT,
+                PRIMARY KEY (taken_at, source, game_key)
+            )
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_trend_game
+            ON trend_snapshots (source, game_key, taken_at)
+        """)
 
 
 def upsert_news(item: dict) -> bool:

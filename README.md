@@ -48,7 +48,7 @@ git clone https://github.com/cedricboucard/le_dashupeur.git
 cd le_dashupeur
 python3 -m venv venv
 source venv/bin/activate
-pip install streamlit feedparser beautifulsoup4 requests yt-dlp openai
+pip install -r requirements.txt
 ```
 
 ---
@@ -131,6 +131,7 @@ le_dashupeur/
 ├── engine.py     # Scan RSS, score, résumés IA, trailers et export
 ├── db.py         # Base SQLite locale (dashupeur.db)
 ├── config.py     # Flux RSS, mots-clés et pondération
+├── requirements.txt  # Dépendances Python
 └── assets/
     ├── icon.png       # Icône du projet (512 px)
     ├── favicon.png    # Icône de l'onglet du navigateur (64 px)

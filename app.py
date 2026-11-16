@@ -1,9 +1,17 @@
+from pathlib import Path
+
 import streamlit as st
 
 from db import clear_inbox, get_news, init_db, update_status
 from engine import export_hebdo, fetch_all_feeds
 
-st.set_page_config(page_title="Le Dashupeur", page_icon="🎮", layout="wide")
+ICON_PATH = Path(__file__).parent / "assets" / "favicon.png"
+
+st.set_page_config(
+    page_title="Le Dashupeur",
+    page_icon=str(ICON_PATH) if ICON_PATH.exists() else "🎮",
+    layout="wide",
+)
 init_db()
 
 st.title("🎮 Le Dashupeur — Régie d'Actualité Gaming")

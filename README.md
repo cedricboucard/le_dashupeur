@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon.png" alt="Icône du Dashupeur" width="160">
+</p>
+
 # 🎮 Le Dashupeur
 
 **Régie d'actualité gaming** : une petite application web qui fait la veille de l'actu jeu vidéo à ta place, t'aide à trier les news et prépare tout le nécessaire pour enregistrer une émission hebdomadaire (« L'Hebdo ») sur YouTube.
@@ -126,7 +130,11 @@ le_dashupeur/
 ├── app.py        # Interface web Streamlit
 ├── engine.py     # Scan RSS, score, résumés IA, trailers et export
 ├── db.py         # Base SQLite locale (dashupeur.db)
-└── config.py     # Flux RSS, mots-clés et pondération
+├── config.py     # Flux RSS, mots-clés et pondération
+└── assets/
+    ├── icon.png       # Icône du projet (512 px)
+    ├── favicon.png    # Icône de l'onglet du navigateur (64 px)
+    └── make_icon.py   # Script qui redessine l'icône (Pillow)
 ```
 
 Créés automatiquement au premier lancement, et ignorés par git :

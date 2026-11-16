@@ -5,6 +5,7 @@ import streamlit as st
 
 from db import clear_inbox, get_news, init_db, update_status
 from engine import export_hebdo, fetch_all_feeds, parse_published
+from radar import fetch_epic_free, fetch_gamerpower, fetch_steam_f2p, radar_news_id, send_to_hebdo
 
 ICON_PATH = Path(__file__).parent / "assets" / "favicon.png"
 
@@ -78,10 +79,17 @@ inbox_items = get_news(status="inbox", min_score=min_score)
 major_items = get_news(status="major")
 vrac_items = get_news(status="vrac")
 
-tab_inbox, tab_hebdo = st.tabs([
-    f"📥 Boîte de réception ({len(inbox_items)})",
-    f"🎬 Préparer l'Hebdo ({len(major_items)} Gros Sujets | {len(vrac_items)} Vrac)"
-])
+st.markdown(
+    f"📥 **{len(inbox_items)}** à trier · 🔥 **{len(major_items)}** gros sujet(s) · "
+    f"⚡ **{len(vrac_items)}** en vrac"
+)
+
+# Libellés fixes + key : l'onglet ouvert reste le même après un clic
+tab_inbox, tab_hebdo, tab_radar = st.tabs(
+    ["📥 Boîte de réception", "🎬 Préparer l'Hebdo", "🎁 Radar Jeux Gratuits & F2P"],
+    key="main_tab",
+    on_change="rerun",
+)
 
 # --- ONGLET 1 : TRI DES NEWS ---
 with tab_inbox:
@@ -152,3 +160,131 @@ with tab_hebdo:
             )
         st.success(f"Pack généré avec succès dans : `{out_path}` !")
         st.code((out_path / "script_hebdo.md").read_text(encoding="utf-8"), language="markdown")
+
+# --- ONGLET 3 : RADAR JEUX GRATUITS & F2P ---
+RADAR_SOURCES = {
+    "epic": fetch_epic_free,
+    "gamerpower": fetch_gamerpower,
+    "steam": fetch_steam_f2p,
+}
+
+
+@st.cache_data(ttl=600, show_spinner=False)
+def load_radar(source: str):
+    """Interroge une source du radar (résultat gardé 10 minutes)."""
+    return RADAR_SOURCES[source](), datetime.now()
+
+
+def format_deadline(item: dict) -> str:
+    now = datetime.now().astimezone()
+    starts, ends = item["starts"], item["ends"]
+    if item["source"] != "Steam" and starts and starts > now:
+        return f"📆 du {starts.astimezone():%d/%m} au {ends.astimezone():%d/%m}" if ends else f"📆 dès le {starts.astimezone():%d/%m}"
+    if not ends:
+        return ""
+    left = ends - now
+    if left.total_seconds() < 86400:
+        return f"⏳ se termine dans {max(int(left.total_seconds() // 3600), 0)} h"
+    return f"⏳ jusqu'au {ends.astimezone():%d/%m à %H:%M}"
+
+
+def render_radar_item(item: dict, section: str, in_hebdo: dict):
+    news_id = radar_news_id(item)
+    with st.container(border=True):
+        col_img, col_txt, col_btn = st.columns([1, 3, 1])
+        with col_img:
+            if item["image"]:
+                st.image(item["image"], width="stretch")
+        with col_txt:
+            st.markdown(f"**[{item['title']}]({item['url']})**")
+            meta = [item["kind"], item["platforms"]]
+            if item["worth"]:
+                meta.append(f"💰 {item['worth']}")
+            meta.append(format_deadline(item))
+            if item["players"] is not None:
+                meta.append(f"👥 {item['players']:,} joueurs en ligne".replace(",", " "))
+            if item["claimed"]:
+                meta.append(f"🙋 {item['claimed']:,} récupérés".replace(",", " "))
+            if item["released"]:
+                meta.append(f"📅 sorti le {item['released']}")
+            st.caption(" • ".join(m for m in meta if m))
+            if item["summary"]:
+                st.write(item["summary"][:220] + ("..." if len(item["summary"]) > 220 else ""))
+        with col_btn:
+            status = in_hebdo.get(news_id)
+            if status:
+                st.success("✅ Gros sujet" if status == "major" else "✅ En vrac")
+                return
+            for label, new_status in (("🔥 Gros Sujet", "major"), ("⚡ En Vrac", "vrac")):
+                if st.button(label, key=f"radar_{new_status}_{section}_{news_id}", use_container_width=True):
+                    with st.spinner("Ajout à L'Hebdo..."):
+                        send_to_hebdo(item, new_status)
+                    where = "gros sujets" if new_status == "major" else "news en vrac"
+                    st.session_state["radar_flash"] = f"« {item['title']} » ajouté aux {where} de L'Hebdo."
+                    st.rerun()
+
+
+def render_radar_source(source: str, section: str, in_hebdo: dict, empty_msg: str, kinds: list[str] | None = None):
+    try:
+        with st.spinner("Interrogation en direct..."):
+            items, fetched_at = load_radar(source)
+    except Exception as e:
+        st.error(f"Source indisponible pour le moment : {e}")
+        return []
+    st.caption(f"Mis à jour à {fetched_at:%H:%M} · {len(items)} résultat(s)")
+    if kinds is not None:
+        items = [i for i in items if i["kind"] in kinds]
+    if not items:
+        st.info(empty_msg)
+    for item in items:
+        render_radar_item(item, section, in_hebdo)
+    return items
+
+
+if tab_radar.open:
+    with tab_radar:
+        in_hebdo = {n["id"]: "major" for n in major_items} | {n["id"]: "vrac" for n in vrac_items}
+
+        col_info, col_refresh = st.columns([4, 1])
+        col_info.caption(
+            "Jeux gratuits et Free-to-Play en temps réel. Un clic sur 🔥 Gros Sujet ou ⚡ En Vrac "
+            "envoie le jeu dans le conducteur de L'Hebdo (script + trailer)."
+        )
+        if col_refresh.button("🔄 Actualiser", use_container_width=True):
+            load_radar.clear()
+            st.rerun()
+
+        if "radar_flash" in st.session_state:
+            st.success(st.session_state.pop("radar_flash"))
+
+        sub_epic, sub_gp, sub_steam = st.tabs(
+            ["🟢 Epic Games Store", "🎁 GamerPower", "🆓 Steam Free-to-Play"],
+            key="radar_tab",
+            on_change="rerun",
+        )
+
+        if sub_epic.open:
+            with sub_epic:
+                st.subheader("🟢 Gratuit maintenant")
+                render_radar_source("epic", "epic_now", in_hebdo, "Aucun jeu gratuit en ce moment.",
+                                    kinds=["🟢 Gratuit maintenant"])
+                st.subheader("⏭️ La semaine prochaine")
+                render_radar_source("epic", "epic_next", in_hebdo, "Epic n'a pas encore dévoilé les prochains jeux.",
+                                    kinds=["⏭️ Gratuit la semaine prochaine"])
+
+        if sub_gp.open:
+            with sub_gp:
+                st.caption("Jeux, DLC et bêtas offerts sur Steam, GOG, Epic, Itch.io, Ubisoft, EA, Battle.net…")
+                kinds = st.pills(
+                    "Type d'offre",
+                    ["🎮 Jeu offert", "🧩 DLC offert", "🧪 Bêta / Playtest"],
+                    selection_mode="multi",
+                    default=["🎮 Jeu offert", "🧩 DLC offert", "🧪 Bêta / Playtest"],
+                    key="gp_kinds",
+                )
+                render_radar_source("gamerpower", "gp", in_hebdo, "Aucune offre pour ces filtres.", kinds=kinds)
+
+        if sub_steam.open:
+            with sub_steam:
+                st.caption("Free-to-Play sortis sur Steam ces 12 derniers mois, classés par joueurs connectés en direct.")
+                render_radar_source("steam", "steam", in_hebdo, "Aucun Free-to-Play récent trouvé.")

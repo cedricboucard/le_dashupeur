@@ -13,6 +13,8 @@ Le Dashupeur récupère les flux RSS de plusieurs sites gaming, donne un score d
 - 🎞️ les **trailers YouTube** des gros sujets (optionnel, via yt-dlp) ;
 - 🤖 des **résumés traduits en français** par IA (optionnel, via OpenAI ou Ollama en local).
 
+Il intègre aussi un **🎁 Radar Jeux Gratuits & F2P**, connecté en temps réel à l'Epic Games Store, GamerPower et Steam : un clic suffit pour envoyer un jeu offert ou un nouveau Free-to-Play dans ton conducteur de L'Hebdo.
+
 Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite locale.
 
 ---
@@ -27,6 +29,8 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 | 🎬 **Pack de L'Hebdo** | Génère un dossier daté avec le script, la description YouTube (chapitres + sources) et un sous-dossier par gros sujet. |
 | 🎞️ **Trailers** | Télécharge le premier trailer officiel trouvé sur YouTube pour chaque gros sujet (jusqu'en 1080p). |
 | 🤖 **Résumés IA** | Traduit et résume chaque gros sujet en 3 points percutants, prêts pour le script vidéo. |
+| 🎁 **Radar Jeux Gratuits & F2P** | En temps réel : jeux gratuits de l'**Epic Games Store** (maintenant + semaine prochaine), jeux/DLC/bêtas offerts via **GamerPower** (Steam, GOG, Epic, Itch.io…) et nouveaux **Free-to-Play Steam** classés par joueurs connectés en direct. |
+| 🔗 **Pont vers L'Hebdo** | Depuis le Radar, **🔥 Gros Sujet** ou **⚡ En Vrac** envoie le jeu dans le conducteur, avec son résumé (valeur, date de fin de l'offre, joueurs en ligne) pour le script et le trailer. |
 
 ---
 
@@ -68,10 +72,11 @@ L'application s'ouvre dans ton navigateur sur **http://localhost:8501**.
 ## 🧭 Utilisation
 
 1. **Scanner** : dans la barre latérale, clique sur **🔄 Scanner l'actualité**. Le nombre de nouvelles news s'affiche, ainsi que les flux en erreur s'il y en a.
-2. **Trier** : dans l'onglet **📥 Boîte de réception**, classe chaque news. Le curseur « Score de pertinence minimum » et la recherche par mot-clé t'aident à aller à l'essentiel.
-3. **Vérifier** : dans l'onglet **🎬 Préparer l'Hebdo**, relis ta sélection. Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
-4. **Générer** : coche si besoin le téléchargement des trailers, puis clique sur **🚀 Générer le pack de L'Hebdo**.
-5. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets et news en vrac sont conservés.
+2. **Trier** : dans l'onglet **📥 Boîte de réception**, classe chaque news. Chaque news affiche sa date de publication (« aujourd'hui », « il y a 3 jours »…). Le curseur « Score de pertinence minimum » et la recherche par mot-clé t'aident à aller à l'essentiel.
+3. **Piocher dans le Radar** (optionnel) : dans l'onglet **🎁 Radar Jeux Gratuits & F2P**, parcours les sous-onglets Epic Games Store, GamerPower et Steam Free-to-Play, puis envoie les jeux qui t'intéressent dans L'Hebdo. Les données sont gardées 10 minutes ; **🔄 Actualiser** force une nouvelle interrogation.
+4. **Vérifier** : dans l'onglet **🎬 Préparer l'Hebdo**, relis ta sélection. Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
+5. **Générer** : coche si besoin le téléchargement des trailers, puis clique sur **🚀 Générer le pack de L'Hebdo**.
+6. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets et news en vrac sont conservés.
 
 ### Ce que contient un pack
 
@@ -129,6 +134,7 @@ KEYWORDS_WEIGHTS = {
 le_dashupeur/
 ├── app.py        # Interface web Streamlit
 ├── engine.py     # Scan RSS, score, résumés IA, trailers et export
+├── radar.py      # Radar Jeux Gratuits & F2P (Epic, GamerPower, Steam)
 ├── db.py         # Base SQLite locale (dashupeur.db)
 ├── config.py     # Flux RSS, mots-clés et pondération
 ├── requirements.txt  # Dépendances Python

@@ -132,6 +132,7 @@ le_dashupeur/
 ├── db.py         # Base SQLite locale (dashupeur.db)
 ├── config.py     # Flux RSS, mots-clés et pondération
 ├── requirements.txt  # Dépendances Python
+├── LICENSE       # Licence MIT
 └── assets/
     ├── icon.png       # Icône du projet (512 px)
     ├── favicon.png    # Icône de l'onglet du navigateur (64 px)
@@ -156,3 +157,9 @@ Créés automatiquement au premier lancement, et ignorés par git :
 ## 🛠️ Technologies
 
 [Streamlit](https://streamlit.io) · [feedparser](https://github.com/kurtmckee/feedparser) · [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/) · [Requests](https://requests.readthedocs.io) · [yt-dlp](https://github.com/yt-dlp/yt-dlp) · [OpenAI Python](https://github.com/openai/openai-python) · SQLite
+
+---
+
+## 📄 Licence
+
+Distribué sous licence **MIT** : tu peux utiliser, modifier et redistribuer ce code librement, à condition de conserver la mention de copyright. Voir le fichier [`LICENSE`](LICENSE).

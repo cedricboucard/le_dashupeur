@@ -1,5 +1,7 @@
 # Flux YouTube d'une chaîne (gratuit, sans clé) : seules les 15 dernières vidéos y figurent
 YOUTUBE_FEED = "https://www.youtube.com/feeds/videos.xml?channel_id={}"
+# Flux d'actualités Steam d'un jeu (gratuit, sans clé) : annonces, patch notes, playtests
+STEAM_NEWS_FEED = "https://store.steampowered.com/feeds/news/app/{}/?l=french"
 
 RSS_FEEDS = {
     # --- MMO ---
@@ -27,6 +29,10 @@ RSS_FEEDS = {
 
     # --- YouTube : chaînes officielles de jeux suivis (ajoute les tiennes ici) ---
     "YouTube · The First Descendant": YOUTUBE_FEED.format("UCRjkGad-W6aGpLcZ0AKealg"),
+
+    # --- Steam : actualités des jeux suivis (l'identifiant est dans l'URL store.steampowered.com/app/<id>/) ---
+    "Steam · Under a Rock": STEAM_NEWS_FEED.format(1667040),
+    "Steam · The First Descendant": STEAM_NEWS_FEED.format(2074920),
 }
 
 # Mots-clés qui boostent le score de pertinence d'une news
@@ -39,6 +45,7 @@ KEYWORDS_WEIGHTS = {
     "gratuit": 12,
     "beta": 10,
     "bêta": 10,
+    "playtest": 10,
     "early access": 8,
     "accès anticipé": 8,
     "multijoueur": 10,

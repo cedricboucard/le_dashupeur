@@ -28,6 +28,9 @@ object Config {
 
     // --- YouTube : chaînes officielles de jeux suivis ---
     "YouTube · The First Descendant" to "https://www.youtube.com/feeds/videos.xml?channel_id=UCRjkGad-W6aGpLcZ0AKealg",
+    // --- Steam : actualités des jeux suivis ---
+    "Steam · Under a Rock" to "https://store.steampowered.com/feeds/news/app/1667040/?l=french",
+    "Steam · The First Descendant" to "https://store.steampowered.com/feeds/news/app/2074920/?l=french",
   )
 
   val KEYWORDS_WEIGHTS: Map<String, Int> = mapOf(
@@ -39,6 +42,7 @@ object Config {
     "gratuit" to 12,
     "beta" to 10,
     "bêta" to 10,
+    "playtest" to 10,
     "early access" to 8,
     "accès anticipé" to 8,
     "multijoueur" to 10,

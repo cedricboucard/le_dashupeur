@@ -25,7 +25,7 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 
 | | |
 |---|---|
-| 📡 **Veille RSS** | Scan de 18 sources : presse MMO et jeu vidéo (MassivelyOP, MMORPG.com, Jeuxvideo.com, Gamekult, ActuGaming, PC Gamer, PCGamesN, Rock Paper Shotgun, Gematsu, Reddit r/MMORPG) et **chaînes YouTube** de trailers et de jeux (IGN, GameSpot, GameTrailers, PlayStation, Xbox, chaînes de trailers indés, The First Descendant). Les doublons sont ignorés automatiquement. |
+| 📡 **Veille RSS** | Scan de 20 sources : presse MMO et jeu vidéo (MassivelyOP, MMORPG.com, Jeuxvideo.com, Gamekult, ActuGaming, PC Gamer, PCGamesN, Rock Paper Shotgun, Gematsu, Reddit r/MMORPG) et **chaînes YouTube** de trailers et de jeux (IGN, GameSpot, GameTrailers, PlayStation, Xbox, chaînes de trailers indés, The First Descendant) et **actualités Steam** des jeux suivis (annonces, playtests, patch notes : Under a Rock, The First Descendant). Les doublons sont ignorés automatiquement. |
 | 🎯 **Score de pertinence** | Chaque news gagne des points selon les mots-clés trouvés (MMORPG, free-to-play, bêta, shutdown…). Les news à 15 points ou plus sont marquées 🔥. |
 | 📥 **Boîte de réception** | Filtre par score minimum ou par mot-clé, puis classe chaque news en **🔥 Gros Sujet**, **⚡ En Vrac** ou **🗑️ Ignorer**. |
 | 🎬 **Pack de L'Hebdo** | Génère un dossier daté avec le script, la description YouTube (chapitres + sources) et un sous-dossier par gros sujet. |
@@ -212,6 +212,13 @@ Tout se règle dans [`config.py`](config.py) :
   ```
 
   Gratuit et sans clé, mais le flux d'une chaîne ne contient que ses 15 dernières vidéos : scanne au moins une fois par jour.
+- **Suivre un jeu sur Steam** (annonces, playtests, patch notes publiés par les développeurs) : ajoute une ligne avec l'identifiant Steam du jeu, le nombre dans l'adresse `store.steampowered.com/app/<id>/` :
+
+  ```python
+  "Steam · Nom du jeu": STEAM_NEWS_FEED.format(1667040),
+  ```
+
+  Gratuit et sans clé. Pense à faire la même chose dans `android/…/data/Config.kt` pour l'app mobile.
 - **`KEYWORDS_WEIGHTS`** : ajoute des mots-clés et leur poids. Plus le poids est élevé, plus une news qui contient ce mot remonte.
 
 ```python

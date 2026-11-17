@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.LocalFireDepartment
@@ -79,6 +80,7 @@ fun ActusScreen(
   onScanFeeds: () -> Unit,
   onClearInbox: () -> Unit,
   onUpdateStatus: (String, String, String) -> Unit,
+  onTogglePick: (NewsItem) -> Unit,
 ) {
   val context = LocalContext.current
   val filtered = remember(state.inboxItems, state.searchQuery, state.sortBy) {
@@ -262,6 +264,8 @@ fun ActusScreen(
           onMajor = { onUpdateStatus(item.id, "major", item.title) },
           onVrac = { onUpdateStatus(item.id, "vrac", item.title) },
           onIgnore = { onUpdateStatus(item.id, "ignored", item.title) },
+          inX = item.id in state.xPickIds,
+          onToggleX = { onTogglePick(item) },
         )
       }
     }
@@ -275,6 +279,8 @@ private fun NewsTriageCard(
   onMajor: () -> Unit,
   onVrac: () -> Unit,
   onIgnore: () -> Unit,
+  inX: Boolean,
+  onToggleX: () -> Unit,
 ) {
   val isHot = item.score >= 15
   Surface(
@@ -393,6 +399,20 @@ private fun NewsTriageCard(
         ) {
           Box(contentAlignment = Alignment.Center) {
             Icon(Icons.Rounded.DeleteOutline, contentDescription = "Ignorer", tint = Outline, modifier = Modifier.size(18.dp))
+          }
+        }
+        Surface(
+          color = if (inX) Secondary.copy(alpha = 0.2f) else SurfaceContainerHigh,
+          shape = RoundedCornerShape(10.dp),
+          modifier = Modifier.width(46.dp).height(42.dp).clickable(onClick = onToggleX),
+        ) {
+          Box(contentAlignment = Alignment.Center) {
+            Icon(
+              Icons.Rounded.Campaign,
+              contentDescription = if (inX) "Retirer de l'Espace X" else "Ajouter à l'Espace X",
+              tint = if (inX) Secondary else Outline,
+              modifier = Modifier.size(18.dp),
+            )
           }
         }
       }

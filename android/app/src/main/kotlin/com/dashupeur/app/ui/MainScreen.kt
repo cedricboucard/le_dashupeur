@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Key
 import androidx.compose.material.icons.rounded.LocalFireDepartment
@@ -63,6 +64,7 @@ import com.dashupeur.app.ui.screens.ActusScreen
 import com.dashupeur.app.ui.screens.HebdoScreen
 import com.dashupeur.app.ui.screens.RadarScreen
 import com.dashupeur.app.ui.screens.TrendsScreen
+import com.dashupeur.app.ui.screens.XScreen
 import com.dashupeur.app.ui.theme.OnPrimary
 import com.dashupeur.app.ui.theme.OnPrimaryContainer
 import com.dashupeur.app.ui.theme.OnSurface
@@ -173,10 +175,12 @@ fun LeDashupeurApp(viewModel: DashupeurViewModel = viewModel()) {
             MainTab.RADAR -> Icons.Rounded.Radar
             MainTab.TENDANCES -> Icons.Rounded.TrendingUp
             MainTab.HEBDO -> Icons.Rounded.CalendarMonth
+            MainTab.X -> Icons.Rounded.Campaign
           }
           val badgeCount = when (tab) {
             MainTab.ACTUS -> state.inboxItems.size
             MainTab.HEBDO -> state.majorItems.size + state.vracItems.size
+            MainTab.X -> state.xPicks.size
             else -> 0
           }
           NavigationBarItem(
@@ -230,6 +234,7 @@ fun LeDashupeurApp(viewModel: DashupeurViewModel = viewModel()) {
           onScanFeeds = viewModel::scanFeeds,
           onClearInbox = viewModel::clearInbox,
           onUpdateStatus = viewModel::updateNewsStatus,
+          onTogglePick = viewModel::toggleXPick,
         )
         MainTab.RADAR -> RadarScreen(
           state = state,
@@ -252,6 +257,18 @@ fun LeDashupeurApp(viewModel: DashupeurViewModel = viewModel()) {
           onRemoveItem = { item -> viewModel.updateNewsStatus(item.id, "inbox", item.title) },
           onGeneratePack = viewModel::generateHebdoPack,
           onDismissExport = viewModel::dismissHebdoExport,
+        )
+        MainTab.X -> XScreen(
+          state = state,
+          onSearchChange = viewModel::setXSearch,
+          onTogglePick = viewModel::toggleXPick,
+          onMove = viewModel::moveXPick,
+          onClear = viewModel::clearXPicks,
+          onModeChange = viewModel::setXMode,
+          onLinkChange = viewModel::setXWithLink,
+          onEdit = viewModel::editXTweet,
+          onReset = viewModel::resetXTweet,
+          onFlash = viewModel::flash,
         )
       }
     }

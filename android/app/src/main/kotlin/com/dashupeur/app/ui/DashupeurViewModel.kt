@@ -30,6 +30,12 @@ enum class MainTab(val label: String, val headerTitle: String) {
   RADAR("Radar F2P", "Radar F2P"),
   TENDANCES("Tendances", "Tendances Gaming"),
   HEBDO("Hebdo", "Hebdo"),
+  X("Espace X", "Espace X"),
+}
+
+enum class XMode(val label: String) {
+  SINGLE("🐦 Tweets séparés"),
+  THREAD("🧵 Thread"),
 }
 
 enum class NewsSort(val label: String) {
@@ -81,7 +87,19 @@ data class DashupeurUiState(
 
   // Hebdo
   val hebdoExport: HebdoExportResult? = null,
+
+  // Espace X
+  val xPicks: List<NewsItem> = emptyList(),
+  val xSearch: String = "",
+  val xResults: List<NewsItem> = emptyList(),
+  val xMode: XMode = XMode.SINGLE,
+  val xWithLink: Boolean = true,
+  /** Textes retouchés à la main, par tweet (clé : mode + id de la news, ou « intro »). */
+  val xEdits: Map<String, String> = emptyMap(),
 ) {
+  val xPickIds: Set<String>
+    get() = xPicks.map { it.id }.toSet()
+
   val inHebdoMap: Map<String, String>
     get() = majorItems.associate { it.id to "major" } + vracItems.associate { it.id to "vrac" }
 }
@@ -138,6 +156,7 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
     viewModelScope.launch {
       val (added, errors) = NewsEngine.fetchAllFeeds(db)
       reloadNewsFromDb()
+      reloadXFromDb()
       val msg = if (errors.isEmpty()) {
         "Scan terminé : $added nouvelle(s) news."
       } else {
@@ -151,6 +170,7 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
     viewModelScope.launch(Dispatchers.IO) {
       db.clearInbox()
       reloadNewsFromDb()
+      reloadXFromDb()
       _state.update { it.copy(flashMessage = "Boîte de réception vidée.") }
     }
   }
@@ -302,10 +322,63 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
     _state.update { it.copy(hebdoExport = null) }
   }
 
+  // --- ESPACE X ---
+
+  fun setXSearch(q: String) {
+    _state.update { it.copy(xSearch = q) }
+    reloadXFromDb()
+  }
+
+  fun toggleXPick(item: NewsItem) {
+    viewModelScope.launch(Dispatchers.IO) {
+      val picked = item.id in _state.value.xPickIds
+      if (picked) db.removeXPick(item.id) else db.addXPick(item.id)
+      _state.update {
+        it.copy(
+          xEdits = emptyMap(),
+          flashMessage = if (picked) "« ${item.title} » retiré de l'Espace X." else "« ${item.title} » ajouté à l'Espace X.",
+        )
+      }
+      reloadXFromDb()
+    }
+  }
+
+  fun moveXPick(item: NewsItem, offset: Int) {
+    viewModelScope.launch(Dispatchers.IO) {
+      db.moveXPick(item.id, offset)
+      _state.update { it.copy(xEdits = emptyMap()) }
+      reloadXFromDb()
+    }
+  }
+
+  fun clearXPicks() {
+    viewModelScope.launch(Dispatchers.IO) {
+      db.clearXPicks()
+      _state.update { it.copy(xEdits = emptyMap(), flashMessage = "Sélection X vidée.") }
+      reloadXFromDb()
+    }
+  }
+
+  // Changer de format ou de lien recalcule les textes (numérotation du thread, lien…)
+  fun setXMode(mode: XMode) = _state.update { it.copy(xMode = mode, xEdits = emptyMap()) }
+  fun setXWithLink(withLink: Boolean) = _state.update { it.copy(xWithLink = withLink, xEdits = emptyMap()) }
+  fun editXTweet(key: String, text: String) = _state.update { it.copy(xEdits = it.xEdits + (key to text)) }
+  fun resetXTweet(key: String) = _state.update { it.copy(xEdits = it.xEdits - key) }
+  fun flash(message: String) = _state.update { it.copy(flashMessage = message) }
+
+  private fun reloadXFromDb() {
+    viewModelScope.launch(Dispatchers.IO) {
+      val picks = db.getXPicks()
+      val results = db.getAllNews(search = _state.value.xSearch)
+      _state.update { it.copy(xPicks = picks, xResults = results) }
+    }
+  }
+
   // --- DB LOADERS ---
 
   private fun reloadAllFromDb() {
     reloadNewsFromDb()
+    reloadXFromDb()
     reloadTrendsFromDb()
   }
 

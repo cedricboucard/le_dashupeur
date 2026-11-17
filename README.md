@@ -170,7 +170,7 @@ Adapte le chemin si le projet est ailleurs. Le journal des relevés est dans `lo
 
 ## 📱 Application Android
 
-Le Dashupeur existe aussi en application Android native (Kotlin + Jetpack Compose), avec les mêmes onglets : **Actus**, **Radar F2P**, **Tendances** et **Hebdo**.
+Le Dashupeur existe aussi en application Android native (Kotlin + Jetpack Compose), avec les mêmes onglets : **Actus**, **Radar F2P**, **Tendances**, **Hebdo** et **Espace X**. Sur mobile, l'Espace X copie le tweet ou l'ouvre directement dans l'app X ; la rédaction par IA n'existe que dans la version web.
 
 ### Installer l'APK
 

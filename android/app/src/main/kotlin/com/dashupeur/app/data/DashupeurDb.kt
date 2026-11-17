@@ -16,7 +16,7 @@ class DashupeurDb(context: Context) : SQLiteOpenHelper(
 ) {
   companion object {
     private const val DB_NAME = "dashupeur.db"
-    private const val DB_VERSION = 1
+    private const val DB_VERSION = 2  // v2 : table x_picks (Espace X)
 
     private fun seedDatabaseIfNeeded(context: Context): Context {
       val dbFile: File = context.getDatabasePath(DB_NAME)
@@ -69,9 +69,24 @@ class DashupeurDb(context: Context) : SQLiteOpenHelper(
       ON trend_snapshots (source, game_key, taken_at)
       """.trimIndent()
     )
+    createXPicksTable(db)
   }
 
-  override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) = Unit
+  override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+    if (oldVersion < 2) createXPicksTable(db)
+  }
+
+  // Espace X : news piochées pour des tweets, indépendamment de leur statut dans l'Hebdo
+  private fun createXPicksTable(db: SQLiteDatabase) {
+    db.execSQL(
+      """
+      CREATE TABLE IF NOT EXISTS x_picks (
+        news_id TEXT PRIMARY KEY,
+        position REAL NOT NULL
+      )
+      """.trimIndent()
+    )
+  }
 
   fun upsertNews(item: NewsItem): Boolean {
     val values = ContentValues().apply {
@@ -101,8 +116,12 @@ class DashupeurDb(context: Context) : SQLiteOpenHelper(
       args.add(status)
     }
     val sql = "SELECT * FROM news WHERE $where ORDER BY score DESC, created_at DESC"
+    return queryNews(sql, args.toTypedArray())
+  }
+
+  private fun queryNews(sql: String, args: Array<String>): List<NewsItem> {
     val items = mutableListOf<NewsItem>()
-    readableDatabase.rawQuery(sql, args.toTypedArray()).use { cursor ->
+    readableDatabase.rawQuery(sql, args).use { cursor ->
       val idxId = cursor.getColumnIndexOrThrow("id")
       val idxTitle = cursor.getColumnIndexOrThrow("title")
       val idxUrl = cursor.getColumnIndexOrThrow("url")
@@ -139,7 +158,65 @@ class DashupeurDb(context: Context) : SQLiteOpenHelper(
   }
 
   fun clearInbox() {
-    writableDatabase.delete("news", "status IN ('inbox', 'ignored')", null)
+    // Les news piochées pour X restent, même si elles étaient dans la boîte de réception
+    writableDatabase.delete(
+      "news",
+      "status IN ('inbox', 'ignored') AND id NOT IN (SELECT news_id FROM x_picks)",
+      null,
+    )
+  }
+
+  // --- Espace X ---
+
+  /** Toutes les news (quel que soit leur statut), les plus récentes d'abord. */
+  fun getAllNews(search: String = "", limit: Int = 60): List<NewsItem> {
+    val args = mutableListOf<String>()
+    var sql = "SELECT * FROM news"
+    if (search.isNotBlank()) {
+      sql += " WHERE lower(title || ' ' || ifnull(summary, '') || ' ' || source) LIKE ?"
+      args.add("%${search.lowercase()}%")
+    }
+    sql += " ORDER BY published DESC, created_at DESC LIMIT $limit"
+    return queryNews(sql, args.toTypedArray())
+  }
+
+  fun getXPicks(): List<NewsItem> = queryNews(
+    "SELECT news.* FROM x_picks JOIN news ON news.id = x_picks.news_id ORDER BY x_picks.position",
+    emptyArray(),
+  )
+
+  fun addXPick(newsId: String) {
+    writableDatabase.execSQL(
+      "INSERT OR IGNORE INTO x_picks (news_id, position) VALUES (?, (SELECT ifnull(max(position), 0) + 1 FROM x_picks))",
+      arrayOf(newsId),
+    )
+  }
+
+  fun removeXPick(newsId: String) {
+    writableDatabase.delete("x_picks", "news_id = ?", arrayOf(newsId))
+  }
+
+  fun clearXPicks() {
+    writableDatabase.delete("x_picks", null, null)
+  }
+
+  /** Échange la news avec sa voisine (offset -1 = monter, +1 = descendre). */
+  fun moveXPick(newsId: String, offset: Int) {
+    val ids = getXPicks().map { it.id }.toMutableList()
+    val i = ids.indexOf(newsId)
+    val j = i + offset
+    if (i < 0 || j !in ids.indices) return
+    ids[i] = ids[j].also { ids[j] = ids[i] }
+    val db = writableDatabase
+    db.beginTransaction()
+    try {
+      ids.forEachIndexed { pos, id ->
+        db.execSQL("UPDATE x_picks SET position = ? WHERE news_id = ?", arrayOf<Any>(pos + 1, id))
+      }
+      db.setTransactionSuccessful()
+    } finally {
+      db.endTransaction()
+    }
   }
 
   fun saveSnapshot(source: String, takenAt: String, rows: List<SnapshotRow>) {

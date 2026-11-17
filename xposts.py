@@ -59,7 +59,7 @@ def build_tweet(item: dict, *, prefix: str = "", body: str | None = None, with_l
 
 
 def thread_intro(count: int) -> str:
-    return f"🎮 L'actu jeux vidéo du {datetime.now():%d/%m} en {count} news 🧵👇"
+    return f"🧅 On épluche l'actu jeux vidéo du {datetime.now():%d/%m} en {count} news 🧵👇"
 
 
 def build_thread(items: list[dict], bodies: dict | None = None, with_link: bool = True) -> list[str]:

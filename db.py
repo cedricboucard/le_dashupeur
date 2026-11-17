@@ -41,7 +41,7 @@ def init_db():
                 PRIMARY KEY (taken_at, source, game_key)
             )
         """)
-        # Espace X : news piochées pour des tweets, indépendamment de leur statut dans l'Hebdo
+        # Espace X : news piochées pour des tweets, indépendamment de leur statut dans l'émission
         conn.execute("""
             CREATE TABLE IF NOT EXISTS x_picks (
                 news_id TEXT PRIMARY KEY REFERENCES news(id) ON DELETE CASCADE,

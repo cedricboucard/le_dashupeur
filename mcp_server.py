@@ -1,6 +1,6 @@
 """Serveur MCP du Dashupeur : ton assistant IA (Claude Desktop, Claude Code, Gemini CLI…) pilote l'app.
 
-Il lit la boîte de réception, prépare L'Hebdo et rédige les tweets de l'Espace X, avec ton abonnement :
+Il lit la boîte de réception, prépare l'émission « On épluche l'actu » et rédige les tweets de l'Espace X, avec ton abonnement :
 aucune clé API n'est nécessaire. Lancement : venv/bin/python mcp_server.py (transport stdio).
 """
 from datetime import datetime, timedelta, timezone
@@ -21,7 +21,7 @@ mcp = MCPServer(
     name="le-dashupeur",
     title="Le Dashupeur",
     instructions=(
-        "Le Dashupeur est la régie d'actualité gaming d'une chaîne YouTube française (émission « L'Hebdo », "
+        "Le Dashupeur est la régie d'actualité gaming d'une chaîne YouTube française (émission hebdomadaire « On épluche l'actu », "
         "style Dashup : MMO, free-to-play, bêtas, annonces, sorties, fermetures). Les news viennent de flux RSS "
         "(presse, YouTube, Steam). Statuts : inbox (à trier), major (gros sujet), vrac (news en vrac), ignored. "
         "L'Espace X est une sélection indépendante pour des tweets en français. Réponds à l'utilisateur en français."
@@ -57,7 +57,7 @@ def _existing_ids(news_ids: list[str]) -> tuple[list[str], list[str]]:
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, openWorldHint=True, idempotentHint=True))
 def scanner_actualite() -> str:
     """Récupère les dernières news de tous les flux RSS (presse, YouTube, Steam) et les ajoute à la boîte de
-    réception. Les doublons sont ignorés. À lancer avant de préparer L'Hebdo si le dernier scan est ancien."""
+    réception. Les doublons sont ignorés. À lancer avant de préparer l'épisode si le dernier scan est ancien."""
     added, errors = fetch_all_feeds()
     message = f"Scan terminé : {added} nouvelle(s) news."
     if errors:
@@ -110,7 +110,7 @@ def lire_news(news_id: str) -> dict:
 
 @mcp.tool(annotations=READ_ONLY)
 def etat_hebdo() -> dict:
-    """Ce qui est déjà prévu : gros sujets et news en vrac de L'Hebdo, et news de l'Espace X (avec leur tweet)."""
+    """Ce qui est déjà prévu : gros sujets et news en vrac de l'épisode, et news de l'Espace X (avec leur tweet)."""
     picks = get_x_picks()
     return {
         "gros_sujets": [_brief(n, 0) for n in get_news(status="major")],
@@ -122,7 +122,7 @@ def etat_hebdo() -> dict:
 
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True))
 def classer_news(news_ids: list[str], statut: Literal["major", "vrac", "inbox", "ignored"]) -> str:
-    """Range des news : major = gros sujet de L'Hebdo, vrac = news en vrac, inbox = remettre à trier,
+    """Range des news : major = gros sujet de l'épisode, vrac = news en vrac, inbox = remettre à trier,
     ignored = écarter. Rien n'est supprimé : tout reste modifiable dans l'app."""
     ok, missing = _existing_ids(news_ids)
     for news_id in ok:
@@ -135,7 +135,7 @@ def classer_news(news_ids: list[str], statut: Literal["major", "vrac", "inbox", 
 
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True))
 def gerer_espace_x(news_ids: list[str], action: Literal["ajouter", "retirer"] = "ajouter") -> str:
-    """Ajoute des news à la sélection de l'Espace X (tweets), ou les en retire. Indépendant de L'Hebdo."""
+    """Ajoute des news à la sélection de l'Espace X (tweets), ou les en retire. Indépendant de l'émission."""
     ok, missing = _existing_ids(news_ids)
     for news_id in ok:
         (add_x_pick if action == "ajouter" else remove_x_pick)(news_id)
@@ -173,20 +173,20 @@ def rediger_tweet(news_id: str, texte: str) -> dict:
 
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=False))
 def generer_pack_hebdo() -> str:
-    """Génère le pack de L'Hebdo (script, description YouTube avec chapitres, dossiers des gros sujets) à partir
+    """Génère le pack de l'épisode (script, description YouTube avec chapitres, dossiers des gros sujets) à partir
     des gros sujets et news en vrac actuels. Les trailers ne sont pas téléchargés ici (bouton dans l'app)."""
     majors, vracs = get_news(status="major"), get_news(status="vrac")
     if not majors and not vracs:
-        raise ToolError("L'Hebdo est vide : classe d'abord des news en major ou vrac.")
+        raise ToolError("L'épisode est vide : classe d'abord des news en major ou vrac.")
     out = export_hebdo(majors, vracs, download_videos=False, ai_cfg=None)
     return f"Pack généré dans {out} ({len(majors)} gros sujets, {len(vracs)} en vrac)."
 
 
-@mcp.prompt(title="Préparer L'Hebdo")
+@mcp.prompt(title="Préparer On épluche l'actu")
 def preparer_hebdo(gros_sujets: int = 10, en_vrac: int = 8) -> str:
-    """Consigne pour que l'assistant prépare L'Hebdo de la semaine de bout en bout."""
+    """Consigne pour que l'assistant prépare l'épisode de la semaine de bout en bout."""
     return (
-        "Prépare L'Hebdo de cette semaine avec les outils du Dashupeur :\n"
+        "Prépare l'épisode de cette semaine d'« On épluche l'actu » avec les outils du Dashupeur :\n"
         "1. Regarde ce qui est déjà prévu avec etat_hebdo.\n"
         "2. Si besoin, lance scanner_actualite, puis lis les news à trier des 7 derniers jours avec lister_news.\n"
         f"3. Choisis {gros_sujets} GROS SUJETS (les plus importants pour le public : MMO, free-to-play, bêtas, "

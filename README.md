@@ -4,7 +4,7 @@
 
 # 🎮 Le Dashupeur
 
-**Régie d'actualité gaming** : une petite application web qui fait la veille de l'actu jeu vidéo à ta place, t'aide à trier les news et prépare tout le nécessaire pour enregistrer une émission hebdomadaire (« L'Hebdo ») sur YouTube.
+**Régie d'actualité gaming** : une petite application web qui fait la veille de l'actu jeu vidéo à ta place, t'aide à trier les news et prépare tout le nécessaire pour enregistrer une émission hebdomadaire sur YouTube : **🧅 On épluche l'actu**, sur la chaîne Onion Burger.
 
 Le Dashupeur récupère les flux RSS de plusieurs sites gaming, donne un score de pertinence à chaque news selon des mots-clés, puis te laisse choisir les gros sujets et les news en vrac. En un clic, il génère :
 
@@ -13,7 +13,7 @@ Le Dashupeur récupère les flux RSS de plusieurs sites gaming, donne un score d
 - 🎞️ les **trailers YouTube** des gros sujets (optionnel, via yt-dlp) ;
 - 🤖 des **résumés traduits en français** par IA (optionnel, via OpenAI ou Ollama en local).
 
-Il intègre aussi un **🎁 Radar Jeux Gratuits & F2P**, connecté en temps réel à l'Epic Games Store, GamerPower et Steam : un clic suffit pour envoyer un jeu offert ou un nouveau Free-to-Play dans ton conducteur de L'Hebdo.
+Il intègre aussi un **🎁 Radar Jeux Gratuits & F2P**, connecté en temps réel à l'Epic Games Store, GamerPower et Steam : un clic suffit pour envoyer un jeu offert ou un nouveau Free-to-Play dans le conducteur de l'émission.
 
 Et un **📈 Détecteur de tendances** qui suit Twitch, Steam et YouTube toutes les 3 heures pour repérer les jeux qui explosent avant tout le monde.
 
@@ -31,13 +31,13 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 | 🎯 **Score de pertinence** | Chaque news gagne des points selon les mots-clés trouvés (MMORPG, free-to-play, bêta, shutdown…). Les news à 15 points ou plus sont marquées 🔥. |
 | 📥 **Boîte de réception** | Filtre par score minimum ou par mot-clé, puis classe chaque news en **🔥 Gros Sujet**, **⚡ En Vrac** ou **🗑️ Ignorer**. |
 | 🤖 **Proposition automatique** | Un bouton choisit 10 gros sujets et 8 news en vrac (par l'IA, ou au score sans IA), sans doublons, à relire et valider. |
-| 🎬 **Pack de L'Hebdo** | Génère un dossier daté avec le script, la description YouTube (chapitres + sources) et un sous-dossier par gros sujet. |
+| 🎬 **Pack de l'épisode** | Génère un dossier daté avec le script, la description YouTube (chapitres + sources) et un sous-dossier par gros sujet. |
 | 🎞️ **Trailers** | Télécharge le premier trailer officiel trouvé sur YouTube pour chaque gros sujet (jusqu'en 1080p). |
 | 🤖 **Résumés IA** | Traduit et résume chaque gros sujet en 3 points percutants, prêts pour le script vidéo. |
 | 🎁 **Radar Jeux Gratuits & F2P** | En temps réel : jeux gratuits de l'**Epic Games Store** (maintenant + semaine prochaine), jeux/DLC/bêtas offerts via **GamerPower** (Steam, GOG, Epic, Itch.io…) et nouveaux **Free-to-Play Steam** classés par joueurs connectés en direct. |
-| 🔗 **Pont vers L'Hebdo** | Depuis le Radar, **🔥 Gros Sujet** ou **⚡ En Vrac** envoie le jeu dans le conducteur, avec son résumé (valeur, date de fin de l'offre, joueurs en ligne) pour le script et le trailer. |
-| 🐦 **Espace X** | Pioche librement des news (sans toucher à L'Hebdo) et obtiens des **tweets séparés** ou un **thread** numéroté (1/5, 2/5…) avec lien de la source. Compteur de caractères calculé comme X (lien = 23, emoji = 2), retouche du texte, rédaction en français par IA (optionnel), bouton 📋 pour copier et **𝕏 Ouvrir dans X** avec le tweet pré-rempli. |
-| 📈 **Détecteur de tendances** | Relevé automatique toutes les 3 h des spectateurs **Twitch**, des joueurs **Steam** et des vues **YouTube** de chaque jeu. Classement « 🚀 Ça monte » par croissance sur 24 h ou 7 jours, repérage des 🆕 nouveaux venus, mini-courbes, et envoi direct vers L'Hebdo. |
+| 🔗 **Pont vers l'émission** | Depuis le Radar, **🔥 Gros Sujet** ou **⚡ En Vrac** envoie le jeu dans le conducteur, avec son résumé (valeur, date de fin de l'offre, joueurs en ligne) pour le script et le trailer. |
+| 🐦 **Espace X** | Pioche librement des news (sans toucher à l'émission) et obtiens des **tweets séparés** ou un **thread** numéroté (1/5, 2/5…) avec lien de la source. Compteur de caractères calculé comme X (lien = 23, emoji = 2), retouche du texte, rédaction en français par IA (optionnel), bouton 📋 pour copier et **𝕏 Ouvrir dans X** avec le tweet pré-rempli. |
+| 📈 **Détecteur de tendances** | Relevé automatique toutes les 3 h des spectateurs **Twitch**, des joueurs **Steam** et des vues **YouTube** de chaque jeu. Classement « 🚀 Ça monte » par croissance sur 24 h ou 7 jours, repérage des 🆕 nouveaux venus, mini-courbes, et envoi direct vers l'émission. |
 
 ---
 
@@ -80,15 +80,15 @@ L'application s'ouvre dans ton navigateur sur **http://localhost:8501**.
 
 1. **Scanner** : dans la barre latérale, clique sur **🔄 Scanner l'actualité**. Le nombre de nouvelles news s'affiche, ainsi que les flux en erreur s'il y en a.
 2. **Trier** : dans l'onglet **📥 Boîte de réception**, classe chaque news. Chaque news affiche sa date de publication (« aujourd'hui », « il y a 3 jours »…). Le curseur « Score de pertinence minimum » et la recherche par mot-clé t'aident à aller à l'essentiel.
-3. **Piocher dans le Radar** (optionnel) : dans l'onglet **🎁 Radar Jeux Gratuits & F2P**, parcours les sous-onglets Epic Games Store, GamerPower et Steam Free-to-Play, puis envoie les jeux qui t'intéressent dans L'Hebdo. Les données sont gardées 10 minutes ; **🔄 Actualiser** force une nouvelle interrogation.
-   Dans l'onglet **📈 Tendances**, repère les jeux qui décollent et envoie-les aussi dans L'Hebdo.
-4. **Vérifier** : dans l'onglet **🎬 Préparer l'Hebdo**, relis ta sélection. Pour aller plus vite, **🤖 Proposer l'Hebdo** choisit à ta place 10 gros sujets et 8 news en vrac (voir ci-dessous). Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
-5. **Générer** : coche si besoin le téléchargement des trailers, puis clique sur **🚀 Générer le pack de L'Hebdo**.
+3. **Piocher dans le Radar** (optionnel) : dans l'onglet **🎁 Radar Jeux Gratuits & F2P**, parcours les sous-onglets Epic Games Store, GamerPower et Steam Free-to-Play, puis envoie les jeux qui t'intéressent dans l'émission. Les données sont gardées 10 minutes ; **🔄 Actualiser** force une nouvelle interrogation.
+   Dans l'onglet **📈 Tendances**, repère les jeux qui décollent et envoie-les aussi dans l'émission.
+4. **Vérifier** : dans l'onglet **🧅 On épluche l'actu**, relis ta sélection. Pour aller plus vite, **🤖 Proposer l'épisode** choisit à ta place 10 gros sujets et 8 news en vrac (voir ci-dessous). Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
+5. **Générer** : coche si besoin le téléchargement des trailers, puis clique sur **🚀 Générer le pack de l'épisode**.
 6. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets, news en vrac et news piochées pour X sont conservés.
 
-### 🤖 Proposition automatique de L'Hebdo
+### 🤖 Proposition automatique de l'épisode
 
-Dans l'onglet **🎬 Préparer l'Hebdo**, le bouton **🤖 Proposer l'Hebdo** prépare une sélection complète à partir de ta boîte de réception :
+Dans l'onglet **🧅 On épluche l'actu**, le bouton **🤖 Proposer l'épisode** prépare une sélection complète à partir de ta boîte de réception :
 
 - il garde les news de la semaine, retire les doublons (la même histoire racontée par plusieurs sites) et présélectionne les 80 plus prometteuses (score + fraîcheur) ;
 - **avec l'IA activée** dans la barre latérale, c'est elle qui choisit **10 gros sujets** et **8 news en vrac**, avec une courte raison pour chacun. Si elle en rend moins, la liste est complétée au score ;
@@ -100,7 +100,7 @@ Tout arrive coché : décoche ce que tu ne veux pas, puis **✅ Valider la propo
 
 ### 🐦 Publier sur X
 
-1. Choisis tes news : **➕** dans l'onglet **🐦 Espace X** (recherche sur toutes les news, quel que soit leur statut) ou **🐦 Pour X** dans la boîte de réception. La sélection est indépendante de L'Hebdo et reste enregistrée.
+1. Choisis tes news : **➕** dans l'onglet **🐦 Espace X** (recherche sur toutes les news, quel que soit leur statut) ou **🐦 Pour X** dans la boîte de réception. La sélection est indépendante de l'émission et reste enregistrée.
 2. Choisis le format : **🐦 Tweets séparés** (un tweet par news) ou **🧵 Thread** (un tweet d'intro puis un tweet par news, dans l'ordre de **↕️ Réordonner la sélection**).
 3. Ajuste si besoin : **✏️ Retoucher** pour modifier le texte, **✍️ Rédiger avec l'IA** pour un tweet en français (IA à activer dans la barre latérale). Le compteur passe au 🔴 au-delà de 280 caractères.
 4. Publie : le bouton **📋** en haut à droite de chaque tweet le copie, à coller dans X. **𝕏 Ouvrir dans X** ouvre directement la fenêtre de rédaction avec le tweet pré-rempli. Pour un thread, poste le 1er tweet puis ajoute les suivants avec **+**.
@@ -109,8 +109,8 @@ Tout arrive coché : décoche ce que tu ne veux pas, puis **✅ Valider la propo
 
 ```
 exports/
-└── Hebdo_2026-11-16_20-30/
-    ├── script_hebdo.md            # Script de l'émission
+└── OnEpluche_2026-11-16_20-30/
+    ├── script_episode.md          # Script de l'émission
     ├── description_youtube.txt    # Chapitres + liens des sources
     ├── 01_Titre_du_sujet/         # Un dossier par gros sujet
     │   └── Trailer officiel.mp4   # (si le téléchargement est activé)
@@ -183,7 +183,7 @@ Adapte le chemin si le projet est ailleurs. Le journal des relevés est dans `lo
 
 ## 🔌 Serveur MCP : ton assistant IA pilote Le Dashupeur
 
-Plutôt que de payer une clé API, utilise **ton abonnement Claude** (ou Gemini) : le serveur MCP donne à l'assistant des outils pour lire tes news et préparer L'Hebdo à ta place. Tu lui dis « Prépare-moi L'Hebdo de la semaine », il choisit les sujets, te les montre, puis les range dans ta base. Tu n'as plus qu'à vérifier dans l'app.
+Plutôt que de payer une clé API, utilise **ton abonnement Claude** (ou Gemini) : le serveur MCP donne à l'assistant des outils pour lire tes news et préparer l'épisode à ta place. Tu lui dis « Prépare-moi l'épisode de la semaine », il choisit les sujets, te les montre, puis les range dans ta base. Tu n'as plus qu'à vérifier dans l'app.
 
 | Outil | Ce qu'il fait |
 |---|---|
@@ -194,9 +194,9 @@ Plutôt que de payer une clé API, utilise **ton abonnement Claude** (ou Gemini)
 | `classer_news` | Range des news en gros sujet, vrac, à trier ou ignorée |
 | `gerer_espace_x` | Ajoute ou retire des news de l'Espace X |
 | `rediger_tweet` | Enregistre un tweet rédigé par l'IA (affiché « ✍️ rédigé par l'IA » dans l'Espace X) |
-| `generer_pack_hebdo` | Génère le pack de L'Hebdo (sans les trailers) |
+| `generer_pack_hebdo` | Génère le pack de l'épisode (sans les trailers) |
 
-Deux consignes toutes prêtes sont fournies : **Préparer L'Hebdo** et **Tweets de la semaine**. L'assistant te montre toujours sa sélection avant de l'appliquer. Rien n'est jamais supprimé : tout reste modifiable dans l'app.
+Deux consignes toutes prêtes sont fournies : **Préparer On épluche l'actu** et **Tweets de la semaine**. L'assistant te montre toujours sa sélection avant de l'appliquer. Rien n'est jamais supprimé : tout reste modifiable dans l'app.
 
 ### Installer le serveur
 
@@ -229,7 +229,7 @@ claude mcp add --scope user le-dashupeur -- /chemin/vers/le_dashupeur/venv/bin/p
 
 ## 📱 Application Android
 
-Le Dashupeur existe aussi en application Android native (Kotlin + Jetpack Compose), avec les mêmes onglets : **Actus**, **Radar F2P**, **Tendances**, **Hebdo** et **Espace X**. Sur mobile, l'Espace X copie le tweet ou l'ouvre directement dans l'app X ; la rédaction par IA n'existe que dans la version web.
+Le Dashupeur existe aussi en application Android native (Kotlin + Jetpack Compose), avec les mêmes onglets : **Actus**, **Radar F2P**, **Tendances**, **Émission** et **Espace X**. Sur mobile, l'Espace X copie le tweet ou l'ouvre directement dans l'app X ; la rédaction par IA n'existe que dans la version web.
 
 ### Installer l'APK
 
@@ -258,7 +258,7 @@ L'APK est généré dans `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 Sans IA, l'application fonctionne normalement : le script reprend simplement le résumé fourni par le flux RSS, et les tweets reprennent le titre et la 1re phrase de la news.
 
-Pour activer l'IA, coche **« Activer l'IA (résumés de l'Hebdo, tweets en français) »** dans la barre latérale, puis choisis :
+Pour activer l'IA, coche **« Activer l'IA (résumés de l'émission, tweets en français) »** dans la barre latérale, puis choisis :
 
 - **OpenAI** : colle ta clé API (le modèle par défaut est `gpt-4o-mini`). La clé n'est ni enregistrée ni envoyée ailleurs qu'à OpenAI.
 - **Ollama (local, gratuit)** : installe [Ollama](https://ollama.com), télécharge un modèle, puis laisse l'URL par défaut `http://localhost:11434/v1`.
@@ -311,7 +311,7 @@ le_dashupeur/
 ├── radar.py      # Radar Jeux Gratuits & F2P (Epic, GamerPower, Steam)
 ├── trends.py     # Détecteur de tendances (relevés + calcul)
 ├── xposts.py     # Espace X : tweets, threads et compteur de caractères
-├── curator.py    # Proposition automatique de L'Hebdo (IA ou score)
+├── curator.py    # Proposition automatique de l'épisode (IA ou score)
 ├── mcp_server.py # Serveur MCP : Claude / Gemini pilotent l'app
 ├── collect_trends.py  # Relevé lancé par la tâche planifiée
 ├── .env.example  # Modèle pour les clés Twitch / YouTube
@@ -329,7 +329,7 @@ le_dashupeur/
 Créés automatiquement au premier lancement, et ignorés par git :
 
 - `dashupeur.db` : la base des news ;
-- `exports/` : les packs de L'Hebdo ;
+- `exports/` : les packs des épisodes ;
 - `logs/` : le journal des relevés de tendances ;
 - `.env` : tes clés API.
 

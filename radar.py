@@ -1,7 +1,7 @@
 """Radar Jeux Gratuits & F2P : Epic Games Store, GamerPower et Steam, en temps réel.
 
 Chaque fonction fetch_* renvoie une liste de jeux au même format (voir _item),
-que l'interface affiche et que send_to_hebdo peut envoyer dans le conducteur de L'Hebdo.
+que l'interface affiche et que send_to_hebdo peut envoyer dans le conducteur de l'émission.
 """
 import hashlib
 import re
@@ -228,7 +228,7 @@ def _steam_description(appid: str) -> str:
         return ""
 
 
-# --- PONT VERS L'HEBDO --------------------------------------------------------
+# --- PONT VERS L'ÉMISSION --------------------------------------------------
 
 def radar_news_id(item: dict) -> str:
     """Même identifiant que les news RSS (hash de l'URL), pour éviter les doublons."""
@@ -256,7 +256,7 @@ def build_summary(item: dict) -> str:
 
 
 def send_to_hebdo(item: dict, status: str) -> str:
-    """Ajoute un jeu du radar au conducteur de L'Hebdo ('major' ou 'vrac'). Renvoie l'id de la news."""
+    """Ajoute un jeu du radar au conducteur de l'émission ('major' ou 'vrac'). Renvoie l'id de la news."""
     news_id = radar_news_id(item)
     summary = build_summary(item)
     score, tags = score_article(item["title"], summary)

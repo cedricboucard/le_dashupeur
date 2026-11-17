@@ -101,7 +101,7 @@ fun HebdoScreen(
             verticalAlignment = Alignment.CenterVertically,
           ) {
             Text(
-              text = "🎬 Préparer l'Hebdo",
+              text = "🧅 On épluche l'actu",
               style = MaterialTheme.typography.headlineMedium,
               color = OnSurface,
             )
@@ -280,7 +280,7 @@ fun HebdoScreen(
       ) {
         Icon(Icons.Rounded.RocketLaunch, contentDescription = null, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
-        Text("Générer le pack de L'Hebdo", style = MaterialTheme.typography.titleMedium)
+        Text("Générer le pack de l'épisode", style = MaterialTheme.typography.titleMedium)
       }
     }
 
@@ -384,7 +384,7 @@ private fun HebdoExportDialog(export: HebdoExportResult, onDismiss: () -> Unit) 
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically,
         ) {
-          Text("Pack L'Hebdo généré ✅", style = MaterialTheme.typography.headlineSmall, color = Secondary)
+          Text("Pack de l'épisode généré ✅", style = MaterialTheme.typography.headlineSmall, color = Secondary)
           IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
             Icon(Icons.Rounded.Close, contentDescription = "Fermer", tint = Outline)
           }
@@ -395,7 +395,7 @@ private fun HebdoExportDialog(export: HebdoExportResult, onDismiss: () -> Unit) 
           containerColor = SurfaceContainerLowest,
           contentColor = PrimaryContainer,
         ) {
-          Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("script_hebdo.md") })
+          Tab(selected = selectedTab == 0, onClick = { selectedTab = 0 }, text = { Text("script_episode.md") })
           Tab(selected = selectedTab == 1, onClick = { selectedTab = 1 }, text = { Text("description_youtube.txt") })
         }
 

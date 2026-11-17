@@ -29,7 +29,7 @@ enum class MainTab(val label: String, val headerTitle: String) {
   ACTUS("Actus", "Actus Newsroom"),
   RADAR("Radar F2P", "Radar F2P"),
   TENDANCES("Tendances", "Tendances Gaming"),
-  HEBDO("Hebdo", "Hebdo"),
+  HEBDO("Émission", "On épluche l'actu"),
   X("Espace X", "Espace X"),
 }
 
@@ -243,7 +243,7 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
       RadarRepository.sendToHebdo(db, item, status)
       reloadNewsFromDb()
       val where = if (status == "major") "Gros Sujets" else "News en Vrac"
-      _state.update { it.copy(flashMessage = "« ${item.title} » ajouté aux $where de L'Hebdo.") }
+      _state.update { it.copy(flashMessage = "« ${item.title} » ajouté aux $where de l'émission.") }
     }
   }
 
@@ -296,7 +296,7 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
       TrendsRepository.sendTrendToHebdo(db, game, _state.value.trendWindowHours, status)
       reloadNewsFromDb()
       val where = if (status == "major") "Gros Sujets" else "News en Vrac"
-      _state.update { it.copy(flashMessage = "« ${game.name} » ajouté aux $where de L'Hebdo.") }
+      _state.update { it.copy(flashMessage = "« ${game.name} » ajouté aux $where de l'émission.") }
     }
   }
 

@@ -76,7 +76,7 @@ class DashupeurDb(context: Context) : SQLiteOpenHelper(
     if (oldVersion < 2) createXPicksTable(db)
   }
 
-  // Espace X : news piochées pour des tweets, indépendamment de leur statut dans l'Hebdo
+  // Espace X : news piochées pour des tweets, indépendamment de leur statut dans l'émission
   private fun createXPicksTable(db: SQLiteDatabase) {
     db.execSQL(
       """

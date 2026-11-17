@@ -44,7 +44,7 @@ class XPostsTest {
   @Test fun threadIsNumbered() {
     val thread = XPosts.buildThread(listOf(item, item.copy(id = "b")))
     assertEquals(3, thread.size)
-    assertTrue(thread[0].startsWith("1/3 🎮 L'actu jeux vidéo du "))
+    assertTrue(thread[0].startsWith("1/3 🧅 On épluche l'actu jeux vidéo du "))
     assertTrue(thread[1].startsWith("2/3 Dev Blog #6"))
     assertTrue(thread[2].startsWith("3/3 Dev Blog #6"))
   }

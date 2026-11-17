@@ -39,7 +39,7 @@ def format_age(published: str) -> str:
 
 
 st.title("🎮 Le Dashupeur — Régie d'Actualité Gaming")
-st.caption("Veille automatisée, tri de l'Hebdo, scripts et récupération de trailers.")
+st.caption("Veille automatisée, tri de l'émission « On épluche l'actu », scripts et récupération de trailers.")
 
 # --- BARRE LATÉRALE : ACTIONS & CONFIG ---
 with st.sidebar:
@@ -65,7 +65,7 @@ with st.sidebar:
 
     st.divider()
     st.header("🤖 Options IA (Optionnel)")
-    use_ai = st.checkbox("Activer l'IA (résumés de l'Hebdo, tweets en français)")
+    use_ai = st.checkbox("Activer l'IA (résumés de l'émission, tweets en français)")
     ai_cfg = {}
     if use_ai:
         ai_provider = st.radio("Fournisseur", ["OpenAI", "Ollama (Local)"])
@@ -95,7 +95,7 @@ st.markdown(
 
 # Libellés fixes + key : l'onglet ouvert reste le même après un clic
 tab_inbox, tab_hebdo, tab_radar, tab_trends, tab_x = st.tabs(
-    ["📥 Boîte de réception", "🎬 Préparer l'Hebdo", "🎁 Radar Jeux Gratuits & F2P", "📈 Tendances", "🐦 Espace X"],
+    ["📥 Boîte de réception", "🧅 On épluche l'actu", "🎁 Radar Jeux Gratuits & F2P", "📈 Tendances", "🐦 Espace X"],
     key="main_tab",
     on_change="rerun",
 )
@@ -151,7 +151,7 @@ with tab_inbox:
                     add_x_pick(item["id"])
                     st.rerun()
 
-# --- ONGLET 2 : EXPORT DE L'HEBDO ---
+# --- ONGLET 2 : PRÉPARATION DE L'ÉMISSION (On épluche l'actu) ---
 def render_proposal(proposal: dict):
     """Proposition de l'IA (ou du score) à relire : tout est coché, décoche ce que tu ne veux pas."""
     by = "🤖 l'IA" if proposal["by"] == "ia" else "📊 le score et la fraîcheur"
@@ -181,7 +181,7 @@ def render_proposal(proposal: dict):
                     counts[kind] += 1
         st.session_state.pop("hebdo_proposal", None)
         st.session_state["hebdo_flash"] = (
-            f"✅ {counts['major']} gros sujet(s) et {counts['vrac']} news en vrac ajoutés à L'Hebdo."
+            f"✅ {counts['major']} gros sujet(s) et {counts['vrac']} news en vrac ajoutés à l'émission."
         )
         st.rerun()
     if col_cancel.button("✖️ Annuler", use_container_width=True):
@@ -199,7 +199,7 @@ with tab_hebdo:
         )
         if flash := st.session_state.pop("hebdo_flash", None):
             st.success(flash)
-        if st.button("🤖 Proposer l'Hebdo", disabled=not inbox_items):
+        if st.button("🤖 Proposer l'épisode", disabled=not inbox_items):
             with st.spinner("L'IA choisit les sujets de la semaine…" if ai_ready else "Sélection en cours…"):
                 try:
                     proposal = propose_with_ai(inbox_items, ai_cfg) if ai_ready else propose_by_score(inbox_items)
@@ -236,7 +236,7 @@ with tab_hebdo:
     st.divider()
     dl_trailers = st.checkbox("📥 Télécharger automatiquement les trailers YouTube des Gros Sujets (via yt-dlp)")
 
-    if st.button("🚀 Générer le pack de L'Hebdo", type="primary", disabled=(not major_items and not vrac_items)):
+    if st.button("🚀 Générer le pack de l'épisode", type="primary", disabled=(not major_items and not vrac_items)):
         with st.spinner("Génération du script, des chapitres et récupération des médias..."):
             out_path = export_hebdo(
                 major_items,
@@ -245,7 +245,7 @@ with tab_hebdo:
                 ai_cfg=ai_cfg if use_ai else None,
             )
         st.success(f"Pack généré avec succès dans : `{out_path}` !")
-        st.code((out_path / "script_hebdo.md").read_text(encoding="utf-8"), language="markdown")
+        st.code((out_path / "script_episode.md").read_text(encoding="utf-8"), language="markdown")
 
 # --- ONGLET 3 : RADAR JEUX GRATUITS & F2P ---
 RADAR_SOURCES = {
@@ -303,10 +303,10 @@ def render_radar_item(item: dict, section: str, in_hebdo: dict):
                 return
             for label, new_status in (("🔥 Gros Sujet", "major"), ("⚡ En Vrac", "vrac")):
                 if st.button(label, key=f"radar_{new_status}_{section}_{news_id}", use_container_width=True):
-                    with st.spinner("Ajout à L'Hebdo..."):
+                    with st.spinner("Ajout à l'émission..."):
                         send_to_hebdo(item, new_status)
                     where = "gros sujets" if new_status == "major" else "news en vrac"
-                    st.session_state["radar_flash"] = f"« {item['title']} » ajouté aux {where} de L'Hebdo."
+                    st.session_state["radar_flash"] = f"« {item['title']} » ajouté aux {where} de l'émission."
                     st.rerun()
 
 
@@ -334,7 +334,7 @@ if tab_radar.open:
         col_info, col_refresh = st.columns([4, 1])
         col_info.caption(
             "Jeux gratuits et Free-to-Play en temps réel. Un clic sur 🔥 Gros Sujet ou ⚡ En Vrac "
-            "envoie le jeu dans le conducteur de L'Hebdo (script + trailer)."
+            "envoie le jeu dans le conducteur de l'émission (script + trailer)."
         )
         if col_refresh.button("🔄 Actualiser", use_container_width=True):
             load_radar.clear()
@@ -416,7 +416,7 @@ def render_trend_item(game: dict, window_hours: int, in_hebdo: dict):
                 if st.button(label, key=f"trend_{new_status}_{news_id}", use_container_width=True):
                     send_to_hebdo(item, new_status)
                     where = "gros sujets" if new_status == "major" else "news en vrac"
-                    st.session_state["trends_flash"] = f"« {game['name']} » ajouté aux {where} de L'Hebdo."
+                    st.session_state["trends_flash"] = f"« {game['name']} » ajouté aux {where} de l'émission."
                     st.rerun()
 
 
@@ -543,7 +543,7 @@ def render_tweet(key: str, default: str, item: dict | None, prefix: str, with_li
 
 with tab_x:
     st.caption(
-        "Pioche librement des news (sans toucher à l'Hebdo), puis copie-colle les tweets sur X "
+        "Pioche librement des news (sans toucher à l'émission), puis copie-colle les tweets sur X "
         "avec le bouton 📋 de chaque bloc, ou ouvre-les directement dans X."
     )
     col_pick, col_write = st.columns([2, 3], gap="large")

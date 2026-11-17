@@ -345,7 +345,7 @@ def history(game_key_: str, days: int = 7) -> dict[str, list[tuple[datetime, int
 
 
 def trend_summary(game: dict, window_hours: int) -> str:
-    """Phrase prête pour le script de L'Hebdo."""
+    """Phrase prête pour le script de l'émission."""
     period = "24 h" if window_hours == 24 else f"{window_hours // 24} jours"
     parts = []
     for source, s in game["sources"].items():

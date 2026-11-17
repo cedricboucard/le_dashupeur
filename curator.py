@@ -1,4 +1,4 @@
-"""Proposition automatique de L'Hebdo : 10 gros sujets + quelques news en vrac, choisis par l'IA (ou par le score)."""
+"""Proposition automatique de l'épisode d'« On épluche l'actu » : 10 gros sujets + quelques news en vrac, choisis par l'IA (ou par le score)."""
 import json
 import re
 import unicodedata
@@ -84,7 +84,7 @@ def propose_with_ai(news: list[dict], ai_cfg: dict) -> dict:
         f"{ref} | {item['source']} | score {item['score']} | {item['title'][:110]}" for ref, item in by_ref.items()
     )
     prompt = (
-        "Tu es rédacteur en chef de « L'Hebdo », l'émission hebdomadaire d'actualité jeu vidéo d'une chaîne "
+        "Tu es rédacteur en chef de « On épluche l'actu », l'émission hebdomadaire d'actualité jeu vidéo d'une chaîne "
         "YouTube française (style Dashup : MMO, free-to-play, bêtas, annonces, sorties, fermetures de jeux).\n"
         f"Parmi les news ci-dessous, choisis exactement {MAJOR_COUNT} GROS SUJETS (les plus importantes et "
         f"intéressantes pour le public) et {VRAC_COUNT} news EN VRAC (plus courtes, mais à mentionner). "

@@ -1,6 +1,7 @@
 # Flux YouTube d'une chaîne (gratuit, sans clé) : seules les 15 dernières vidéos y figurent
 YOUTUBE_FEED = "https://www.youtube.com/feeds/videos.xml?channel_id={}"
 # Flux d'actualités Steam d'un jeu (gratuit, sans clé) : annonces, patch notes, playtests
+SHOW_NAME = "On épluche l'actu"  # Nom de l'émission YouTube
 STEAM_NEWS_FEED = "https://store.steampowered.com/feeds/news/app/{}/?l=french"
 
 RSS_FEEDS = {

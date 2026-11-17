@@ -9,7 +9,7 @@ import requests
 import yt_dlp
 from bs4 import BeautifulSoup
 
-from config import KEYWORDS_WEIGHTS, RSS_FEEDS, USER_AGENT
+from config import KEYWORDS_WEIGHTS, RSS_FEEDS, SHOW_NAME, USER_AGENT
 from db import upsert_news
 
 EXPORTS_DIR = Path(__file__).parent / "exports"
@@ -160,12 +160,12 @@ def export_hebdo(
     ai_cfg: dict | None = None,
 ) -> Path:
     date_str = datetime.now().strftime("%Y-%m-%d_%H-%M")
-    export_dir = EXPORTS_DIR / f"Hebdo_{date_str}"
+    export_dir = EXPORTS_DIR / f"OnEpluche_{date_str}"
     export_dir.mkdir(parents=True, exist_ok=True)
 
-    script_lines = [f"# 🎬 SCRIPT L'HEBDO DU {datetime.now().strftime('%d/%m/%Y')}\n"]
+    script_lines = [f"# 🧅 SCRIPT {SHOW_NAME.upper()} DU {datetime.now().strftime('%d/%m/%Y')}\n"]
     desc_lines = [
-        "Bienvenue dans ce nouvel épisode de L'Hebdo !\n",
+        f"🧅 Bienvenue dans ce nouvel épisode de « {SHOW_NAME} » !\n",
         "⏱️ CHAPITRES :",
         "00:00 - Introduction",
     ]
@@ -211,7 +211,7 @@ def export_hebdo(
         script_lines.append(f"  > {item['summary'][:200]}...\n")
         links_lines.append(f"- [Vrac] {item['title']} : {item['url']}")
 
-    (export_dir / "script_hebdo.md").write_text("\n".join(script_lines), encoding="utf-8")
+    (export_dir / "script_episode.md").write_text("\n".join(script_lines), encoding="utf-8")
     (export_dir / "description_youtube.txt").write_text(
         "\n".join(desc_lines + links_lines), encoding="utf-8"
     )

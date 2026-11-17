@@ -186,12 +186,12 @@ object NewsEngine {
     vracs: List<NewsItem>,
   ): HebdoExportResult {
     val now = ZonedDateTime.now()
-    val folderName = "Hebdo_${now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))}"
+    val folderName = "OnEpluche_${now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm"))}"
     val exportDir = File(context.filesDir, "exports/$folderName").apply { mkdirs() }
 
-    val scriptLines = mutableListOf("# 🎬 SCRIPT L'HEBDO DU ${now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))}\n")
+    val scriptLines = mutableListOf("# 🧅 SCRIPT ${Config.SHOW_NAME.uppercase()} DU ${now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))}\n")
     val descLines = mutableListOf(
-      "Bienvenue dans ce nouvel épisode de L'Hebdo !\n",
+      "🧅 Bienvenue dans ce nouvel épisode de « ${Config.SHOW_NAME} » !\n",
       "⏱️ CHAPITRES :",
       "00:00 - Introduction",
     )
@@ -220,7 +220,7 @@ object NewsEngine {
     val scriptMd = scriptLines.joinToString("\n")
     val youtubeDesc = (descLines + linksLines).joinToString("\n")
 
-    File(exportDir, "script_hebdo.md").writeText(scriptMd, Charsets.UTF_8)
+    File(exportDir, "script_episode.md").writeText(scriptMd, Charsets.UTF_8)
     File(exportDir, "description_youtube.txt").writeText(youtubeDesc, Charsets.UTF_8)
 
     return HebdoExportResult(

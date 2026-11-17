@@ -130,7 +130,7 @@ private fun PickList(
   ) {
     item {
       Text(
-        text = "Pioche librement des news, sans toucher à L'Hebdo.",
+        text = "Pioche librement des news, sans toucher à l'émission.",
         style = MaterialTheme.typography.bodySmall,
         color = OnSurfaceVariant,
       )

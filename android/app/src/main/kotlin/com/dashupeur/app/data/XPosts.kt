@@ -53,7 +53,7 @@ object XPosts {
   }
 
   fun threadIntro(count: Int): String =
-    "🎮 L'actu jeux vidéo du ${LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM"))} en $count news 🧵👇"
+    "🧅 On épluche l'actu jeux vidéo du ${LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM"))} en $count news 🧵👇"
 
   /** Thread numéroté : un tweet d'intro puis un tweet par news (« 2/5 », « 3/5 »…). */
   fun buildThread(items: List<NewsItem>, withLink: Boolean = true): List<String> {

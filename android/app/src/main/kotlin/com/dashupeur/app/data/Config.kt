@@ -63,5 +63,6 @@ object Config {
     "canceled" to 10,
   )
 
+  const val SHOW_NAME = "On épluche l'actu" // Nom de l'émission YouTube
   const val USER_AGENT = "LeDashupeur/1.0 (+https://github.com/cedricboucard/le_dashupeur)"
 }

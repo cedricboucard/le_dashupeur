@@ -3,11 +3,13 @@ from pathlib import Path
 
 import streamlit as st
 
-from db import clear_inbox, get_news, init_db, update_status
+from db import (add_x_pick, clear_inbox, clear_x_picks, get_all_news, get_news, get_x_picks, init_db, move_x_pick,
+                remove_x_pick, update_status)
 from engine import export_hebdo, fetch_all_feeds, parse_published
 from radar import _item, fetch_epic_free, fetch_gamerpower, fetch_steam_f2p, radar_news_id, send_to_hebdo
 from trends import (SOURCE_LABELS, UNITS, active_sources, collect_all, compute_trends, history,
                     latest_snapshot, snapshot_times, trend_summary)
+from xposts import TWEET_MAX, ai_tweet_body, build_thread, build_tweet, intent_url, tweet_length
 
 ICON_PATH = Path(__file__).parent / "assets" / "favicon.png"
 
@@ -62,7 +64,7 @@ with st.sidebar:
 
     st.divider()
     st.header("🤖 Options IA (Optionnel)")
-    use_ai = st.checkbox("Résumer & traduire les gros sujets via IA")
+    use_ai = st.checkbox("Activer l'IA (résumés de l'Hebdo, tweets en français)")
     ai_cfg = {}
     if use_ai:
         ai_provider = st.radio("Fournisseur", ["OpenAI", "Ollama (Local)"])
@@ -80,15 +82,17 @@ with st.sidebar:
 inbox_items = get_news(status="inbox", min_score=min_score)
 major_items = get_news(status="major")
 vrac_items = get_news(status="vrac")
+x_picks = get_x_picks()
+x_pick_ids = {n["id"] for n in x_picks}
 
 st.markdown(
     f"📥 **{len(inbox_items)}** à trier · 🔥 **{len(major_items)}** gros sujet(s) · "
-    f"⚡ **{len(vrac_items)}** en vrac"
+    f"⚡ **{len(vrac_items)}** en vrac · 🐦 **{len(x_picks)}** pour X"
 )
 
 # Libellés fixes + key : l'onglet ouvert reste le même après un clic
-tab_inbox, tab_hebdo, tab_radar, tab_trends = st.tabs(
-    ["📥 Boîte de réception", "🎬 Préparer l'Hebdo", "🎁 Radar Jeux Gratuits & F2P", "📈 Tendances"],
+tab_inbox, tab_hebdo, tab_radar, tab_trends, tab_x = st.tabs(
+    ["📥 Boîte de réception", "🎬 Préparer l'Hebdo", "🎁 Radar Jeux Gratuits & F2P", "📈 Tendances", "🐦 Espace X"],
     key="main_tab",
     on_change="rerun",
 )
@@ -137,6 +141,11 @@ with tab_inbox:
                     st.rerun()
                 if st.button("🗑️ Ignorer", key=f"ign_{item['id']}", use_container_width=True):
                     update_status(item["id"], "ignored")
+                    st.rerun()
+                if item["id"] in x_pick_ids:
+                    st.caption("🐦 Dans l'Espace X")
+                elif st.button("🐦 Pour X", key=f"x_{item['id']}", use_container_width=True):
+                    add_x_pick(item["id"])
                     st.rerun()
 
 # --- ONGLET 2 : EXPORT DE L'HEBDO ---
@@ -418,3 +427,130 @@ if tab_trends.open:
                 st.info("Aucun jeu ne dépasse ce seuil de hausse. Baisse le curseur « Hausse minimum ».")
             for game in rising:
                 render_trend_item(game, window_hours, in_hebdo)
+
+# --- ONGLET 5 : ESPACE X ---
+def x_text_key(mode: str, news_id: str) -> str:
+    return f"xtxt_{mode}_{news_id}"
+
+
+def x_set_text(key: str, text: str):
+    st.session_state[key] = text
+
+
+def x_ai_rewrite(key: str, item: dict, prefix: str, with_link: bool):
+    try:
+        body = ai_tweet_body(item, ai_cfg)
+        st.session_state[key] = build_tweet(item, prefix=prefix, body=body, with_link=with_link)
+    except Exception as e:  # clé absente, Ollama éteint…
+        st.session_state["x_ai_error"] = str(e)
+
+
+def x_forget_texts():
+    """Oublie les textes rédigés : ils seront recalculés (numérotation du thread, lien…)."""
+    for key in [k for k in st.session_state if k.startswith("xtxt_")]:
+        del st.session_state[key]
+
+
+def render_tweet(key: str, default: str, item: dict | None, prefix: str, with_link: bool, label: str):
+    """Un tweet : aperçu à copier, compteur de caractères, retouche, rédaction IA et ouverture dans X."""
+    if key not in st.session_state:
+        st.session_state[key] = default
+    text = st.session_state[key]
+    length = tweet_length(text)
+
+    with st.container(border=True):
+        head, count = st.columns([4, 1])
+        head.markdown(f"**{label}**")
+        count.markdown(f"{'🔴' if length > TWEET_MAX else '🟢'} `{length}/{TWEET_MAX}`")
+        # Le bouton 📋 en haut à droite du bloc copie le tweet
+        st.code(text, language=None, wrap_lines=True)
+
+        with st.expander("✏️ Retoucher"):
+            st.text_area("Texte du tweet", key=key, height=160, label_visibility="collapsed")
+            if item is not None:
+                st.button("↺ Revenir au texte de base", key=f"reset_{key}",
+                          on_click=x_set_text, args=(key, default))
+        cols = st.columns(2)
+        if item is not None:
+            cols[0].button("✍️ Rédiger avec l'IA", key=f"ai_{key}", use_container_width=True, disabled=not ai_ready,
+                           help="Rédiger en français avec l'IA" if ai_ready else "Active l'IA dans la barre latérale",
+                           on_click=x_ai_rewrite, args=(key, item, prefix, with_link))
+        cols[1].link_button("𝕏 Ouvrir dans X", intent_url(text), use_container_width=True, help="Ouvrir dans X, tweet pré-rempli")
+
+
+ai_ready = use_ai and bool(ai_cfg.get("api_key") or ai_cfg.get("base_url"))
+
+with tab_x:
+    st.caption(
+        "Pioche librement des news (sans toucher à l'Hebdo), puis copie-colle les tweets sur X "
+        "avec le bouton 📋 de chaque bloc, ou ouvre-les directement dans X."
+    )
+    col_pick, col_write = st.columns([2, 3], gap="large")
+
+    with col_pick:
+        st.subheader("🧺 Piocher")
+        x_search = st.text_input("🔍 Chercher une news (titre, résumé, source)", key="x_search")
+        for item in get_all_news(search=x_search, limit=60):
+            picked = item["id"] in x_pick_ids
+            with st.container(border=True):
+                txt, btn = st.columns([5, 1])
+                txt.markdown(f"**[{item['title']}]({item['url']})**")
+                txt.caption(f"🕒 {format_age(item['published'])} • {item['source']}")
+                if btn.button("", icon=":material/check:" if picked else ":material/add:", key=f"xpick_{item['id']}",
+                              help="Retirer de la sélection" if picked else "Ajouter à la sélection"):
+                    (remove_x_pick if picked else add_x_pick)(item["id"])
+                    x_forget_texts()
+                    st.rerun()
+
+    with col_write:
+        st.subheader(f"✍️ Ma sélection ({len(x_picks)})")
+        if not x_picks:
+            st.info("Ta sélection est vide : ajoute des news avec ➕ (ou 🐦 Pour X dans la boîte de réception).")
+        else:
+            x_mode = st.segmented_control(
+                "Format", ["🐦 Tweets séparés", "🧵 Thread"], default="🐦 Tweets séparés",
+                key="x_mode", on_change=x_forget_texts,
+            ) or "🐦 Tweets séparés"
+            opt_link, opt_clear = st.columns([3, 1])
+            with_link = opt_link.toggle("🔗 Ajouter le lien de la source", value=True, key="x_link",
+                                    on_change=x_forget_texts)
+            if opt_clear.button("🧹 Vider", use_container_width=True):
+                clear_x_picks()
+                x_forget_texts()
+                st.rerun()
+
+            if not ai_ready:
+                st.caption("💡 Pour des tweets rédigés en français, active l'IA dans la barre latérale.")
+            if err := st.session_state.pop("x_ai_error", None):
+                st.error(f"L'IA n'a pas répondu : {err}")
+
+            # Ordre de la sélection (= ordre du thread)
+            with st.expander("↕️ Réordonner la sélection"):
+                for i, item in enumerate(x_picks):
+                    c_title, c_up, c_down, c_del = st.columns([6, 1, 1, 1])
+                    c_title.markdown(f"{i + 1}. {item['title']}")
+                    for col, sym, offset, ok in ((c_up, "⬆️", -1, i > 0), (c_down, "⬇️", 1, i < len(x_picks) - 1)):
+                        if col.button(sym, key=f"xmove{offset}_{item['id']}", disabled=not ok):
+                            move_x_pick(item["id"], offset)
+                            x_forget_texts()
+                            st.rerun()
+                    if c_del.button("✖️", key=f"xdel_{item['id']}", help="Retirer"):
+                        remove_x_pick(item["id"])
+                        x_forget_texts()
+                        st.rerun()
+
+            if x_mode == "🧵 Thread":
+                thread = build_thread(x_picks, with_link=with_link)
+                total = len(thread)
+                st.caption(
+                    "Poste le 1er tweet, puis réponds-lui avec les suivants dans l'ordre "
+                    "(ou utilise « + » dans la fenêtre de rédaction de X)."
+                )
+                render_tweet(x_text_key("thread", "intro"), thread[0], None, "", with_link, f"1/{total} · Intro")
+                for pos, (item, default) in enumerate(zip(x_picks, thread[1:]), start=2):
+                    render_tweet(x_text_key("thread", item["id"]), default, item, f"{pos}/{total} ",
+                                 with_link, f"{pos}/{total} · {item['source']}")
+            else:
+                for item in x_picks:
+                    render_tweet(x_text_key("single", item["id"]), build_tweet(item, with_link=with_link),
+                                 item, "", with_link, item["source"])

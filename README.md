@@ -17,6 +17,8 @@ Il intègre aussi un **🎁 Radar Jeux Gratuits & F2P**, connecté en temps rée
 
 Et un **📈 Détecteur de tendances** qui suit Twitch, Steam et YouTube toutes les 3 heures pour repérer les jeux qui explosent avant tout le monde.
 
+Enfin, l'**🐦 Espace X** transforme les news de ton choix en tweets séparés ou en thread, prêts à copier-coller sur X.
+
 Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite locale.
 
 ---
@@ -33,6 +35,7 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 | 🤖 **Résumés IA** | Traduit et résume chaque gros sujet en 3 points percutants, prêts pour le script vidéo. |
 | 🎁 **Radar Jeux Gratuits & F2P** | En temps réel : jeux gratuits de l'**Epic Games Store** (maintenant + semaine prochaine), jeux/DLC/bêtas offerts via **GamerPower** (Steam, GOG, Epic, Itch.io…) et nouveaux **Free-to-Play Steam** classés par joueurs connectés en direct. |
 | 🔗 **Pont vers L'Hebdo** | Depuis le Radar, **🔥 Gros Sujet** ou **⚡ En Vrac** envoie le jeu dans le conducteur, avec son résumé (valeur, date de fin de l'offre, joueurs en ligne) pour le script et le trailer. |
+| 🐦 **Espace X** | Pioche librement des news (sans toucher à L'Hebdo) et obtiens des **tweets séparés** ou un **thread** numéroté (1/5, 2/5…) avec lien de la source. Compteur de caractères calculé comme X (lien = 23, emoji = 2), retouche du texte, rédaction en français par IA (optionnel), bouton 📋 pour copier et **𝕏 Ouvrir dans X** avec le tweet pré-rempli. |
 | 📈 **Détecteur de tendances** | Relevé automatique toutes les 3 h des spectateurs **Twitch**, des joueurs **Steam** et des vues **YouTube** de chaque jeu. Classement « 🚀 Ça monte » par croissance sur 24 h ou 7 jours, repérage des 🆕 nouveaux venus, mini-courbes, et envoi direct vers L'Hebdo. |
 
 ---
@@ -80,7 +83,14 @@ L'application s'ouvre dans ton navigateur sur **http://localhost:8501**.
    Dans l'onglet **📈 Tendances**, repère les jeux qui décollent et envoie-les aussi dans L'Hebdo.
 4. **Vérifier** : dans l'onglet **🎬 Préparer l'Hebdo**, relis ta sélection. Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
 5. **Générer** : coche si besoin le téléchargement des trailers, puis clique sur **🚀 Générer le pack de L'Hebdo**.
-6. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets et news en vrac sont conservés.
+6. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets, news en vrac et news piochées pour X sont conservés.
+
+### 🐦 Publier sur X
+
+1. Choisis tes news : **➕** dans l'onglet **🐦 Espace X** (recherche sur toutes les news, quel que soit leur statut) ou **🐦 Pour X** dans la boîte de réception. La sélection est indépendante de L'Hebdo et reste enregistrée.
+2. Choisis le format : **🐦 Tweets séparés** (un tweet par news) ou **🧵 Thread** (un tweet d'intro puis un tweet par news, dans l'ordre de **↕️ Réordonner la sélection**).
+3. Ajuste si besoin : **✏️ Retoucher** pour modifier le texte, **✍️ Rédiger avec l'IA** pour un tweet en français (IA à activer dans la barre latérale). Le compteur passe au 🔴 au-delà de 280 caractères.
+4. Publie : le bouton **📋** en haut à droite de chaque tweet le copie, à coller dans X. **𝕏 Ouvrir dans X** ouvre directement la fenêtre de rédaction avec le tweet pré-rempli. Pour un thread, poste le 1er tweet puis ajoute les suivants avec **+**.
 
 ### Ce que contient un pack
 
@@ -187,9 +197,9 @@ L'APK est généré dans `android/app/build/outputs/apk/debug/app-debug.apk`.
 
 ## 🤖 Résumés par IA (optionnel)
 
-Sans IA, l'application fonctionne normalement : le script reprend simplement le résumé fourni par le flux RSS.
+Sans IA, l'application fonctionne normalement : le script reprend simplement le résumé fourni par le flux RSS, et les tweets reprennent le titre et la 1re phrase de la news.
 
-Pour activer l'IA, coche **« Résumer & traduire les gros sujets via IA »** dans la barre latérale, puis choisis :
+Pour activer l'IA, coche **« Activer l'IA (résumés de l'Hebdo, tweets en français) »** dans la barre latérale, puis choisis :
 
 - **OpenAI** : colle ta clé API (le modèle par défaut est `gpt-4o-mini`). La clé n'est ni enregistrée ni envoyée ailleurs qu'à OpenAI.
 - **Ollama (local, gratuit)** : installe [Ollama](https://ollama.com), télécharge un modèle, puis laisse l'URL par défaut `http://localhost:11434/v1`.
@@ -241,6 +251,7 @@ le_dashupeur/
 ├── engine.py     # Scan RSS, score, résumés IA, trailers et export
 ├── radar.py      # Radar Jeux Gratuits & F2P (Epic, GamerPower, Steam)
 ├── trends.py     # Détecteur de tendances (relevés + calcul)
+├── xposts.py     # Espace X : tweets, threads et compteur de caractères
 ├── collect_trends.py  # Relevé lancé par la tâche planifiée
 ├── .env.example  # Modèle pour les clés Twitch / YouTube
 ├── db.py         # Base SQLite locale (dashupeur.db)

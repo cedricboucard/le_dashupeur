@@ -104,30 +104,34 @@ def fetch_all_feeds() -> tuple[int, list[str]]:
     return added, errors
 
 
+def ask_ai(prompt: str, ai_cfg: dict, temperature: float = 0.5) -> str:
+    """Envoie une consigne à OpenAI ou à Ollama (si base_url est renseignée)."""
+    from openai import OpenAI
+
+    client_kwargs = {"api_key": ai_cfg.get("api_key") or "ollama"}
+    if ai_cfg.get("base_url"):
+        client_kwargs["base_url"] = ai_cfg["base_url"]
+
+    client = OpenAI(**client_kwargs)
+    resp = client.chat.completions.create(
+        model=ai_cfg.get("model") or "gpt-4o-mini",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=temperature,
+    )
+    return resp.choices[0].message.content.strip()
+
+
 def summarize_with_ai(title: str, summary: str, api_key: str, base_url: str = "", model: str = "gpt-4o-mini") -> str:
     """Résume et traduit en français via OpenAI ou Ollama (si base_url renseignée)."""
     if not api_key and not base_url:
         return summary
 
-    from openai import OpenAI
-
-    client_kwargs = {"api_key": api_key or "ollama"}
-    if base_url:
-        client_kwargs["base_url"] = base_url
-
-    client = OpenAI(**client_kwargs)
     prompt = (
         "Tu es chroniqueur pour une chaîne YouTube d'actualité jeu vidéo (style Dashup). "
         "Traduis et résume cette news en français en 3 points courts et percutants pour un script vidéo.\n\n"
         f"Titre : {title}\nContenu : {summary}"
     )
-
-    resp = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.5,
-    )
-    return resp.choices[0].message.content.strip()
+    return ask_ai(prompt, {"api_key": api_key, "base_url": base_url, "model": model})
 
 
 def download_trailer(query: str, output_dir: Path) -> str:

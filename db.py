@@ -1,7 +1,9 @@
+import os
 import sqlite3
 from pathlib import Path
 
-DB_PATH = Path(__file__).parent / "dashupeur.db"
+# DASHUPEUR_DB permet de pointer vers une autre base (tests, copie de sauvegarde…)
+DB_PATH = Path(os.environ.get("DASHUPEUR_DB") or Path(__file__).parent / "dashupeur.db")
 
 
 def get_conn():
@@ -43,9 +45,14 @@ def init_db():
         conn.execute("""
             CREATE TABLE IF NOT EXISTS x_picks (
                 news_id TEXT PRIMARY KEY REFERENCES news(id) ON DELETE CASCADE,
-                position REAL NOT NULL
+                position REAL NOT NULL,
+                tweet TEXT
             )
         """)
+        # Bases créées avant l'ajout de la colonne tweet (tweet rédigé par l'IA, via le serveur MCP)
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(x_picks)")}
+        if "tweet" not in columns:
+            conn.execute("ALTER TABLE x_picks ADD COLUMN tweet TEXT")
         conn.execute("""
             CREATE INDEX IF NOT EXISTS idx_trend_game
             ON trend_snapshots (source, game_key, taken_at)
@@ -105,7 +112,7 @@ def get_all_news(search: str = "", limit: int = 60):
 def get_x_picks():
     with get_conn() as conn:
         rows = conn.execute("""
-            SELECT news.* FROM x_picks JOIN news ON news.id = x_picks.news_id
+            SELECT news.*, x_picks.tweet AS x_tweet FROM x_picks JOIN news ON news.id = x_picks.news_id
             ORDER BY x_picks.position
         """).fetchall()
         return [dict(row) for row in rows]
@@ -117,6 +124,12 @@ def add_x_pick(news_id: str):
             INSERT OR IGNORE INTO x_picks (news_id, position)
             VALUES (?, (SELECT ifnull(max(position), 0) + 1 FROM x_picks))
         """, (news_id,))
+
+
+def set_x_tweet(news_id: str, tweet: str | None):
+    """Enregistre le texte du tweet d'une news de la sélection X (None = revenir au texte automatique)."""
+    with get_conn() as conn:
+        conn.execute("UPDATE x_picks SET tweet = ? WHERE news_id = ?", (tweet, news_id))
 
 
 def remove_x_pick(news_id: str):

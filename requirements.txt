@@ -15,3 +15,4 @@ yt-dlp>=2026.10.26
 
 # Résumés IA (OpenAI ou Ollama via l'API compatible OpenAI)
 openai>=3.51.0
+mcp>=2.3.0

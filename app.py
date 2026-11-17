@@ -609,9 +609,14 @@ with tab_x:
                 )
                 render_tweet(x_text_key("thread", "intro"), thread[0], None, "", with_link, f"1/{total} · Intro")
                 for pos, (item, default) in enumerate(zip(x_picks, thread[1:]), start=2):
-                    render_tweet(x_text_key("thread", item["id"]), default, item, f"{pos}/{total} ",
+                    prefix = f"{pos}/{total} "
+                    if item.get("x_tweet"):  # tweet rédigé par Claude via le serveur MCP
+                        default = build_tweet(item, prefix=prefix, body=item["x_tweet"], with_link=with_link)
+                    render_tweet(x_text_key("thread", item["id"]), default, item, prefix,
                                  with_link, f"{pos}/{total} · {item['source']}")
             else:
                 for item in x_picks:
-                    render_tweet(x_text_key("single", item["id"]), build_tweet(item, with_link=with_link),
-                                 item, "", with_link, item["source"])
+                    # Tweet rédigé par Claude via le serveur MCP, sinon texte automatique
+                    default = build_tweet(item, body=item.get("x_tweet") or None, with_link=with_link)
+                    label = item["source"] + (" · ✍️ rédigé par l'IA" if item.get("x_tweet") else "")
+                    render_tweet(x_text_key("single", item["id"]), default, item, "", with_link, label)

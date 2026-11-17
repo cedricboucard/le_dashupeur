@@ -181,6 +181,52 @@ Adapte le chemin si le projet est ailleurs. Le journal des relevés est dans `lo
 
 ---
 
+## 🔌 Serveur MCP : ton assistant IA pilote Le Dashupeur
+
+Plutôt que de payer une clé API, utilise **ton abonnement Claude** (ou Gemini) : le serveur MCP donne à l'assistant des outils pour lire tes news et préparer L'Hebdo à ta place. Tu lui dis « Prépare-moi L'Hebdo de la semaine », il choisit les sujets, te les montre, puis les range dans ta base. Tu n'as plus qu'à vérifier dans l'app.
+
+| Outil | Ce qu'il fait |
+|---|---|
+| `scanner_actualite` | Récupère les dernières news de tous les flux |
+| `lister_news` | Liste les news (par statut, période, mot-clé, score) |
+| `lire_news` | Détail complet d'une news |
+| `etat_hebdo` | Gros sujets, news en vrac et Espace X déjà prévus |
+| `classer_news` | Range des news en gros sujet, vrac, à trier ou ignorée |
+| `gerer_espace_x` | Ajoute ou retire des news de l'Espace X |
+| `rediger_tweet` | Enregistre un tweet rédigé par l'IA (affiché « ✍️ rédigé par l'IA » dans l'Espace X) |
+| `generer_pack_hebdo` | Génère le pack de L'Hebdo (sans les trailers) |
+
+Deux consignes toutes prêtes sont fournies : **Préparer L'Hebdo** et **Tweets de la semaine**. L'assistant te montre toujours sa sélection avant de l'appliquer. Rien n'est jamais supprimé : tout reste modifiable dans l'app.
+
+### Installer le serveur
+
+Dans les commandes ci-dessous, remplace `/chemin/vers/le_dashupeur` par le dossier du projet.
+
+**Claude Code** :
+
+```bash
+claude mcp add --scope user le-dashupeur -- /chemin/vers/le_dashupeur/venv/bin/python /chemin/vers/le_dashupeur/mcp_server.py
+```
+
+**Claude Desktop** : ajoute ce bloc dans `claude_desktop_config.json` (Paramètres → Développeur → Modifier la configuration), puis redémarre Claude :
+
+```json
+{
+  "mcpServers": {
+    "le-dashupeur": {
+      "command": "/chemin/vers/le_dashupeur/venv/bin/python",
+      "args": ["/chemin/vers/le_dashupeur/mcp_server.py"]
+    }
+  }
+}
+```
+
+**Gemini CLI** : le même bloc `mcpServers` va dans `~/.gemini/settings.json`.
+
+> L'app web et le serveur MCP partagent la même base : après une action de l'assistant, recharge la page de l'app pour voir le résultat.
+
+---
+
 ## 📱 Application Android
 
 Le Dashupeur existe aussi en application Android native (Kotlin + Jetpack Compose), avec les mêmes onglets : **Actus**, **Radar F2P**, **Tendances**, **Hebdo** et **Espace X**. Sur mobile, l'Espace X copie le tweet ou l'ouvre directement dans l'app X ; la rédaction par IA n'existe que dans la version web.
@@ -266,6 +312,7 @@ le_dashupeur/
 ├── trends.py     # Détecteur de tendances (relevés + calcul)
 ├── xposts.py     # Espace X : tweets, threads et compteur de caractères
 ├── curator.py    # Proposition automatique de L'Hebdo (IA ou score)
+├── mcp_server.py # Serveur MCP : Claude / Gemini pilotent l'app
 ├── collect_trends.py  # Relevé lancé par la tâche planifiée
 ├── .env.example  # Modèle pour les clés Twitch / YouTube
 ├── db.py         # Base SQLite locale (dashupeur.db)

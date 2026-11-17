@@ -30,6 +30,7 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 | 📡 **Veille RSS** | Scan de 20 sources : presse MMO et jeu vidéo (MassivelyOP, MMORPG.com, Jeuxvideo.com, Gamekult, ActuGaming, PC Gamer, PCGamesN, Rock Paper Shotgun, Gematsu, Reddit r/MMORPG) et **chaînes YouTube** de trailers et de jeux (IGN, GameSpot, GameTrailers, PlayStation, Xbox, chaînes de trailers indés, The First Descendant) et **actualités Steam** des jeux suivis (annonces, playtests, patch notes : Under a Rock, The First Descendant). Les doublons sont ignorés automatiquement. |
 | 🎯 **Score de pertinence** | Chaque news gagne des points selon les mots-clés trouvés (MMORPG, free-to-play, bêta, shutdown…). Les news à 15 points ou plus sont marquées 🔥. |
 | 📥 **Boîte de réception** | Filtre par score minimum ou par mot-clé, puis classe chaque news en **🔥 Gros Sujet**, **⚡ En Vrac** ou **🗑️ Ignorer**. |
+| 🤖 **Proposition automatique** | Un bouton choisit 10 gros sujets et 8 news en vrac (par l'IA, ou au score sans IA), sans doublons, à relire et valider. |
 | 🎬 **Pack de L'Hebdo** | Génère un dossier daté avec le script, la description YouTube (chapitres + sources) et un sous-dossier par gros sujet. |
 | 🎞️ **Trailers** | Télécharge le premier trailer officiel trouvé sur YouTube pour chaque gros sujet (jusqu'en 1080p). |
 | 🤖 **Résumés IA** | Traduit et résume chaque gros sujet en 3 points percutants, prêts pour le script vidéo. |
@@ -81,9 +82,21 @@ L'application s'ouvre dans ton navigateur sur **http://localhost:8501**.
 2. **Trier** : dans l'onglet **📥 Boîte de réception**, classe chaque news. Chaque news affiche sa date de publication (« aujourd'hui », « il y a 3 jours »…). Le curseur « Score de pertinence minimum » et la recherche par mot-clé t'aident à aller à l'essentiel.
 3. **Piocher dans le Radar** (optionnel) : dans l'onglet **🎁 Radar Jeux Gratuits & F2P**, parcours les sous-onglets Epic Games Store, GamerPower et Steam Free-to-Play, puis envoie les jeux qui t'intéressent dans L'Hebdo. Les données sont gardées 10 minutes ; **🔄 Actualiser** force une nouvelle interrogation.
    Dans l'onglet **📈 Tendances**, repère les jeux qui décollent et envoie-les aussi dans L'Hebdo.
-4. **Vérifier** : dans l'onglet **🎬 Préparer l'Hebdo**, relis ta sélection. Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
+4. **Vérifier** : dans l'onglet **🎬 Préparer l'Hebdo**, relis ta sélection. Pour aller plus vite, **🤖 Proposer l'Hebdo** choisit à ta place 10 gros sujets et 8 news en vrac (voir ci-dessous). Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
 5. **Générer** : coche si besoin le téléchargement des trailers, puis clique sur **🚀 Générer le pack de L'Hebdo**.
 6. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets, news en vrac et news piochées pour X sont conservés.
+
+### 🤖 Proposition automatique de L'Hebdo
+
+Dans l'onglet **🎬 Préparer l'Hebdo**, le bouton **🤖 Proposer l'Hebdo** prépare une sélection complète à partir de ta boîte de réception :
+
+- il garde les news de la semaine, retire les doublons (la même histoire racontée par plusieurs sites) et présélectionne les 80 plus prometteuses (score + fraîcheur) ;
+- **avec l'IA activée** dans la barre latérale, c'est elle qui choisit **10 gros sujets** et **8 news en vrac**, avec une courte raison pour chacun. Si elle en rend moins, la liste est complétée au score ;
+- **sans IA**, le choix se fait au score et à la fraîcheur, avec au plus 3 gros sujets par source.
+
+Tout arrive coché : décoche ce que tu ne veux pas, puis **✅ Valider la proposition**. Rien n'est déplacé avant ta validation.
+
+> Avec Ollama, un modèle de 8B (comme `llama3` ou `dolphin3`) peut mettre plusieurs minutes sur un PC sans carte graphique, et demande environ 6 Go de mémoire libre.
 
 ### 🐦 Publier sur X
 
@@ -252,6 +265,7 @@ le_dashupeur/
 ├── radar.py      # Radar Jeux Gratuits & F2P (Epic, GamerPower, Steam)
 ├── trends.py     # Détecteur de tendances (relevés + calcul)
 ├── xposts.py     # Espace X : tweets, threads et compteur de caractères
+├── curator.py    # Proposition automatique de L'Hebdo (IA ou score)
 ├── collect_trends.py  # Relevé lancé par la tâche planifiée
 ├── .env.example  # Modèle pour les clés Twitch / YouTube
 ├── db.py         # Base SQLite locale (dashupeur.db)

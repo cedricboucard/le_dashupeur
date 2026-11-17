@@ -5,6 +5,7 @@ import streamlit as st
 
 from db import (add_x_pick, clear_inbox, clear_x_picks, get_all_news, get_news, get_x_picks, init_db, move_x_pick,
                 remove_x_pick, update_status)
+from curator import propose_by_score, propose_with_ai
 from engine import export_hebdo, fetch_all_feeds, parse_published
 from radar import _item, fetch_epic_free, fetch_gamerpower, fetch_steam_f2p, radar_news_id, send_to_hebdo
 from trends import (SOURCE_LABELS, UNITS, active_sources, collect_all, compute_trends, history,
@@ -78,6 +79,8 @@ with st.sidebar:
     st.divider()
     min_score = st.slider("Score de pertinence minimum", 0, 50, 0, step=5)
 
+ai_ready = use_ai and bool(ai_cfg.get("api_key") or ai_cfg.get("base_url"))
+
 # --- ONGLETS PRINCIPAUX ---
 inbox_items = get_news(status="inbox", min_score=min_score)
 major_items = get_news(status="major")
@@ -149,7 +152,67 @@ with tab_inbox:
                     st.rerun()
 
 # --- ONGLET 2 : EXPORT DE L'HEBDO ---
+def render_proposal(proposal: dict):
+    """Proposition de l'IA (ou du score) à relire : tout est coché, décoche ce que tu ne veux pas."""
+    by = "🤖 l'IA" if proposal["by"] == "ia" else "📊 le score et la fraîcheur"
+    st.caption(f"Proposition faite par {by}. Décoche ce que tu ne veux pas, puis valide.")
+    col_p_maj, col_p_vrac = st.columns(2)
+    for col, kind, title in ((col_p_maj, "major", "🔥 Gros sujets"), (col_p_vrac, "vrac", "⚡ En vrac")):
+        with col:
+            st.markdown(f"**{title} ({len(proposal[kind])})**")
+            for entry in proposal[kind]:
+                item = entry["item"]
+                st.checkbox(
+                    f"[{item['title']}]({item['url']})",
+                    value=True,
+                    key=f"prop_{kind}_{item['id']}",
+                    help=f"{item['source']} • {format_age(item['published'])}",
+                )
+                if entry["why"]:
+                    st.caption(f"↳ {entry['why']}")
+
+    col_ok, col_cancel, _ = st.columns([1, 1, 2])
+    if col_ok.button("✅ Valider la proposition", type="primary", use_container_width=True):
+        counts = {"major": 0, "vrac": 0}
+        for kind in ("major", "vrac"):
+            for entry in proposal[kind]:
+                if st.session_state.get(f"prop_{kind}_{entry['item']['id']}", True):
+                    update_status(entry["item"]["id"], kind)
+                    counts[kind] += 1
+        st.session_state.pop("hebdo_proposal", None)
+        st.session_state["hebdo_flash"] = (
+            f"✅ {counts['major']} gros sujet(s) et {counts['vrac']} news en vrac ajoutés à L'Hebdo."
+        )
+        st.rerun()
+    if col_cancel.button("✖️ Annuler", use_container_width=True):
+        st.session_state.pop("hebdo_proposal", None)
+        st.rerun()
+
+
 with tab_hebdo:
+    with st.container(border=True):
+        st.markdown("#### 🤖 Proposition automatique")
+        st.caption(
+            "Choisit 10 gros sujets et 8 news en vrac dans ta boîte de réception (news de la semaine, sans doublons). "
+            + ("L'IA de la barre latérale fait le choix." if ai_ready
+               else "Sans IA activée dans la barre latérale, le choix se fait au score et à la fraîcheur.")
+        )
+        if flash := st.session_state.pop("hebdo_flash", None):
+            st.success(flash)
+        if st.button("🤖 Proposer l'Hebdo", disabled=not inbox_items):
+            with st.spinner("L'IA choisit les sujets de la semaine…" if ai_ready else "Sélection en cours…"):
+                try:
+                    proposal = propose_with_ai(inbox_items, ai_cfg) if ai_ready else propose_by_score(inbox_items)
+                except Exception as e:  # IA injoignable, réponse illisible…
+                    st.error(f"L'IA n'a pas pu proposer de sélection ({e}). Voici la proposition au score à la place.")
+                    proposal = propose_by_score(inbox_items)
+            # Nouvelle proposition : on oublie les cases cochées de la précédente
+            for key in [k for k in st.session_state if k.startswith("prop_")]:
+                del st.session_state[key]
+            st.session_state["hebdo_proposal"] = proposal
+        if proposal := st.session_state.get("hebdo_proposal"):
+            render_proposal(proposal)
+
     col_maj, col_vrac = st.columns(2)
 
     with col_maj:
@@ -477,8 +540,6 @@ def render_tweet(key: str, default: str, item: dict | None, prefix: str, with_li
                            on_click=x_ai_rewrite, args=(key, item, prefix, with_link))
         cols[1].link_button("𝕏 Ouvrir dans X", intent_url(text), use_container_width=True, help="Ouvrir dans X, tweet pré-rempli")
 
-
-ai_ready = use_ai and bool(ai_cfg.get("api_key") or ai_cfg.get("base_url"))
 
 with tab_x:
     st.caption(

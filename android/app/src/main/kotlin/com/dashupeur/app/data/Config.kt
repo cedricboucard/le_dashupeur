@@ -22,6 +22,7 @@ object Config {
     "Google News · Lancements mondiaux" to "https://news.google.com/rss/search?q=(%22global+launch%22+OR+%22global+release%22+OR+%22pre-registration%22)+game+when:7d&hl=en-US&gl=US&ceid=US:en",
     "Google News · Bêtas MMO et gacha" to "https://news.google.com/rss/search?q=(%22closed+beta%22+OR+%22open+beta%22+OR+playtest)+(MMO+OR+MMORPG+OR+gacha)+when:7d&hl=en-US&gl=US&ceid=US:en",
     "Google News · Fermetures" to "https://news.google.com/rss/search?q=(MMO+OR+gacha+OR+%22live+service%22)+(%22end+of+service%22+OR+shutdown)+when:7d&hl=en-US&gl=US&ceid=US:en",
+    "Google News · Com2uS" to "https://news.google.com/rss/search?q=Com2uS+when:7d&hl=en-US&gl=US&ceid=US:en",
     "Google News · MMO et gacha (FR)" to "https://news.google.com/rss/search?q=(MMORPG+OR+gacha)+when:7d&hl=fr&gl=FR&ceid=FR:fr",
 
     // --- YouTube : chaînes de trailers (là où sortent les annonces) ---
@@ -38,6 +39,7 @@ object Config {
     // --- Steam : actualités des jeux suivis ---
     "Steam · Under a Rock" to "https://store.steampowered.com/feeds/news/app/1667040/?l=french",
     "Steam · The First Descendant" to "https://store.steampowered.com/feeds/news/app/2074920/?l=french",
+    "Steam · ARES: The Iron Vanguard" to "https://store.steampowered.com/feeds/news/app/5366290/?l=french",
   )
 
   val KEYWORDS_WEIGHTS: Map<String, Int> = mapOf(

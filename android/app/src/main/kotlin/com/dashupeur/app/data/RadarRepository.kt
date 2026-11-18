@@ -192,18 +192,21 @@ object RadarRepository {
     }.getOrNull()
   }
 
-  private fun steamSearch(extraParams: Map<String, String>): List<RadarItem> {
+  /** Recherche Steam des jeux les plus récents : free-to-play par défaut, tous les jeux si tags = null. */
+  private fun steamSearch(extraParams: Map<String, String>, tags: String? = "113"): List<RadarItem> {
     val params = linkedMapOf(
       "query" to "",
       "start" to "0",
-      "tags" to "113",
       "category1" to "998",
       "sort_by" to "Released_DESC",
       "infinite" to "1",
       "json" to "1",
       "cc" to "fr",
       "l" to "french",
-    ).apply { putAll(extraParams) }
+    ).apply {
+      if (tags != null) put("tags", tags)
+      putAll(extraParams)
+    }
 
     val body = HttpUtils.getText(STEAM_SEARCH_URL, params)
     val html = JSONObject(body).optString("results_html", "")
@@ -280,6 +283,53 @@ object RadarRepository {
     withPlayers.sortedByDescending { it.players ?: 0 }.take(limit)
   }
 
+  /**
+   * Sorties Steam des derniers jours pour le scan de l'actualité : les « nouveautés populaires »
+   * de Steam, et les nouveaux free-to-play ayant au moins minF2pPlayers joueurs connectés
+   * (pour écarter les dizaines de petits jeux gratuits publiés chaque jour).
+   */
+  suspend fun scanSteamReleases(db: DashupeurDb, maxAgeDays: Long = 3, minF2pPlayers: Int = 50): Int =
+    withContext(Dispatchers.IO) {
+      val now = Instant.now()
+      fun recent(items: List<RadarItem>) =
+        items.filter { it.starts != null && ChronoUnit.DAYS.between(it.starts, now) <= maxAgeDays }
+
+      val found = linkedMapOf<String, RadarItem>()
+      recent(steamSearch(mapOf("filter" to "popularnew", "count" to "50"), tags = null)).forEach { item ->
+        item.steamAppId?.let { found[it] = item.copy(kind = "🎮 Nouveauté Steam populaire") }
+      }
+      val f2p = recent(steamSearch(mapOf("count" to "100"))).filter { it.steamAppId !in found }
+      coroutineScope {
+        f2p.map { item -> async { item.copy(players = item.steamAppId?.let { steamPlayers(it) }) } }.awaitAll()
+      }.filter { (it.players ?: 0) >= minF2pPlayers }.forEach { found[it.steamAppId!!] = it }
+
+      var added = 0
+      for (item in found.values) {
+        val newsId = radarNewsId(item)
+        if (db.hasNews(newsId)) continue // déjà en base : inutile de redemander sa description à Steam
+        val free = item.kind == "🆓 Nouveau Free-to-Play"
+        val title = "Sortie Steam : ${item.title}" + if (free) " (free-to-play)" else ""
+        val summary = buildSummary(item)
+        val (score, tags) = NewsEngine.scoreArticle(title, summary)
+        val cleanKind = item.kind.replace(Regex("""^\W+\s*"""), "")
+        val inserted = db.upsertNews(
+          NewsItem(
+            id = newsId,
+            title = title,
+            url = item.url,
+            source = "Steam · Nouveautés",
+            published = item.starts.toString(),
+            summary = summary,
+            score = score,
+            tags = (listOf(cleanKind) + tags).joinToString(", "),
+            status = "inbox",
+          )
+        )
+        if (inserted) added++
+      }
+      added
+    }
+
   fun radarNewsId(item: RadarItem): String = HttpUtils.md5Hex(item.url)
 
   fun formatDeadline(item: RadarItem): String {
@@ -305,8 +355,8 @@ object RadarRepository {
     return "⏳ jusqu'au ${ends.atZone(localZone).format(dayMonthTimeFmt)}"
   }
 
-  suspend fun sendToHebdo(db: DashupeurDb, item: RadarItem, status: String): String = withContext(Dispatchers.IO) {
-    val newsId = radarNewsId(item)
+  /** Description Steam (si besoin), valeur, dates et joueurs connectés, en une phrase par info. */
+  private fun buildSummary(item: RadarItem): String {
     val desc = item.summary.ifBlank {
       item.steamAppId?.let { steamDescription(it) }.orEmpty()
     }
@@ -327,7 +377,13 @@ object RadarRepository {
     if (item.released.isNotBlank()) {
       parts.add("Sorti le ${item.released}.")
     }
-    val summary = parts.joinToString(" ")
+    return parts.joinToString(" ")
+  }
+
+  suspend fun sendToHebdo(db: DashupeurDb, item: RadarItem, status: String): String = withContext(Dispatchers.IO) {
+    val newsId = radarNewsId(item)
+    val now = Instant.now()
+    val summary = buildSummary(item)
     val (score, tags) = NewsEngine.scoreArticle(item.title, summary)
     val cleanKind = item.kind.replace(Regex("""^\W+\s*"""), "")
     db.upsertNews(

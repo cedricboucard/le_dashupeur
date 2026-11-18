@@ -108,6 +108,9 @@ object NewsEngine {
         errors.add("$sourceName: ${e.message ?: "erreur"}")
       }
     }
+    // Nouvelles sorties Steam (pas de flux RSS : recherche de la boutique)
+    runCatching { added += RadarRepository.scanSteamReleases(db) }
+      .onFailure { e -> errors.add("Steam · Nouveautés: ${e.message ?: "erreur"}") }
     added to errors
   }
 

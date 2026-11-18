@@ -101,6 +101,13 @@ def fetch_all_feeds() -> tuple[int, list[str]]:
         except Exception as e:
             errors.append(f"{source_name}: {e}")
 
+    # Nouvelles sorties Steam (pas de flux RSS : recherche de la boutique)
+    from radar import scan_steam_releases  # import ici : radar importe déjà engine
+    try:
+        added += scan_steam_releases()
+    except Exception as e:
+        errors.append(f"Steam · Nouveautés: {e}")
+
     return added, errors
 
 

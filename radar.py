@@ -12,7 +12,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from config import USER_AGENT
-from db import update_status, upsert_news
+from db import get_conn, update_status, upsert_news
 from engine import clean_html, score_article
 
 HEADERS = {"User-Agent": USER_AGENT}
@@ -170,9 +170,10 @@ def _parse_steam_date(text: str) -> datetime | None:
     return datetime(int(m.group(3)), FRENCH_MONTHS[m.group(2).lower()], int(m.group(1)), tzinfo=timezone.utc)
 
 
-def _steam_search(**params) -> list[dict]:
+def _steam_search(tags: int | None = STEAM_TAG_FREE_TO_PLAY, **params) -> list[dict]:
+    """Recherche Steam des jeux les plus récents (free-to-play par défaut, tous les jeux si tags=None)."""
     data = _get(
-        STEAM_SEARCH_URL, query="", start=0, tags=STEAM_TAG_FREE_TO_PLAY, category1=998,
+        STEAM_SEARCH_URL, query="", start=0, tags=tags, category1=998,
         sort_by="Released_DESC", infinite=1, json=1, cc="fr", l="french", **params,
     ).json()
     soup = BeautifulSoup(data.get("results_html", ""), "html.parser")
@@ -218,6 +219,58 @@ def fetch_steam_f2p(max_age_days: int = 365, limit: int = 25) -> list[dict]:
             item["players"] = players
     items.sort(key=lambda i: i["players"] or 0, reverse=True)
     return items[:limit]
+
+
+def fetch_steam_new_releases(max_age_days: int = 3, min_f2p_players: int = 50) -> list[dict]:
+    """Sorties Steam des derniers jours qui méritent un coup d'œil, pour le scan de l'actualité.
+
+    - les « nouveautés populaires » mises en avant par Steam (quelques jeux par jour) ;
+    - les nouveaux free-to-play ayant au moins min_f2p_players joueurs connectés,
+      pour écarter les dizaines de petits jeux gratuits publiés chaque jour.
+    """
+    now = datetime.now(timezone.utc)
+
+    def recent(items):
+        return [i for i in items if i["starts"] and (now - i["starts"]).days <= max_age_days]
+
+    found = {}
+    for item in recent(_steam_search(tags=None, filter="popularnew", count=50)):
+        item["kind"] = "🎮 Nouveauté Steam populaire"
+        found[item["steam_appid"]] = item
+
+    f2p = [i for i in recent(_steam_search(count=100)) if i["steam_appid"] not in found]
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        for item, players in zip(f2p, pool.map(_steam_players, [i["steam_appid"] for i in f2p])):
+            item["players"] = players
+            if (players or 0) >= min_f2p_players:
+                found[item["steam_appid"]] = item
+    return list(found.values())
+
+
+def scan_steam_releases() -> int:
+    """Ajoute à la boîte de réception les nouvelles sorties Steam pas encore connues. Renvoie le nombre ajouté."""
+    added = 0
+    for item in fetch_steam_new_releases():
+        news_id = radar_news_id(item)
+        with get_conn() as conn:  # déjà en base : inutile de redemander sa description à Steam
+            if conn.execute("SELECT 1 FROM news WHERE id = ?", (news_id,)).fetchone():
+                continue
+        free = item["kind"] == "🆓 Nouveau Free-to-Play"
+        title = f"Sortie Steam : {item['title']}" + (" (free-to-play)" if free else "")
+        summary = build_summary(item)
+        score, tags = score_article(title, summary)
+        kind = re.sub(r"^\W+\s*", "", item["kind"])
+        added += upsert_news({
+            "id": news_id,
+            "title": title,
+            "url": item["url"],
+            "source": "Steam · Nouveautés",
+            "published": item["starts"].isoformat(),
+            "summary": summary,
+            "score": score,
+            "tags": ", ".join([kind] + tags),
+        })
+    return added
 
 
 def _steam_description(appid: str) -> str:

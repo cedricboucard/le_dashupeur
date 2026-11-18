@@ -88,6 +88,9 @@ class DashupeurDb(context: Context) : SQLiteOpenHelper(
     )
   }
 
+  fun hasNews(newsId: String): Boolean =
+    readableDatabase.rawQuery("SELECT 1 FROM news WHERE id = ?", arrayOf(newsId)).use { it.moveToFirst() }
+
   fun upsertNews(item: NewsItem): Boolean {
     val values = ContentValues().apply {
       put("id", item.id)

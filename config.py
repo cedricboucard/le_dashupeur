@@ -26,6 +26,7 @@ RSS_FEEDS = {
     "Google News · Lancements mondiaux": GOOGLE_NEWS_FEED.format("(%22global+launch%22+OR+%22global+release%22+OR+%22pre-registration%22)+game+when:7d"),
     "Google News · Bêtas MMO et gacha": GOOGLE_NEWS_FEED.format("(%22closed+beta%22+OR+%22open+beta%22+OR+playtest)+(MMO+OR+MMORPG+OR+gacha)+when:7d"),
     "Google News · Fermetures": GOOGLE_NEWS_FEED.format("(MMO+OR+gacha+OR+%22live+service%22)+(%22end+of+service%22+OR+shutdown)+when:7d"),
+    "Google News · Com2uS": GOOGLE_NEWS_FEED.format("Com2uS+when:7d"),
     "Google News · MMO et gacha (FR)": "https://news.google.com/rss/search?q=(MMORPG+OR+gacha)+when:7d&hl=fr&gl=FR&ceid=FR:fr",
 
     # --- YouTube : chaînes de trailers (là où sortent les annonces) ---
@@ -43,6 +44,7 @@ RSS_FEEDS = {
     # --- Steam : actualités des jeux suivis (l'identifiant est dans l'URL store.steampowered.com/app/<id>/) ---
     "Steam · Under a Rock": STEAM_NEWS_FEED.format(1667040),
     "Steam · The First Descendant": STEAM_NEWS_FEED.format(2074920),
+    "Steam · ARES: The Iron Vanguard": STEAM_NEWS_FEED.format(5366290),
 }
 
 # Mots-clés qui boostent le score de pertinence d'une news

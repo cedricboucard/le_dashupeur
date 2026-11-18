@@ -240,6 +240,8 @@ Le Dashupeur existe aussi en application Android native (Kotlin + Jetpack Compos
 
 L'app Android peut aussi t'**alerter des sorties Steam** : touche la cloche 🔔 en haut de l'écran. Toutes les 3 heures, elle cherche les nouvelles sorties (nouveautés populaires de Steam et free-to-play à 50 joueurs connectés ou plus), les ajoute à la boîte de réception et envoie une notification pour chacune (un récapitulatif au-delà de 3). Android peut retarder la vérification quand le téléphone économise la batterie.
 
+Pour suivre ta **liste de souhaits Steam** sur mobile, touche la clé 🔑 et renseigne ton SteamID64 (17 chiffres, liste publique) : chaque scan ajoute alors les annonces des 7 derniers jours des 200 jeux ajoutés le plus récemment.
+
 ### Installer l'APK
 
 1. Depuis ton téléphone, ouvre la [dernière release](https://github.com/cedricboucard/le_dashupeur/releases/latest) et télécharge **LeDashupeur-vX.Y.apk**.

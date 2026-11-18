@@ -75,7 +75,7 @@ object NewsEngine {
     return score to matched
   }
 
-  suspend fun fetchAllFeeds(db: DashupeurDb): Pair<Int, List<String>> = withContext(Dispatchers.IO) {
+  suspend fun fetchAllFeeds(db: DashupeurDb, steamId: String = ""): Pair<Int, List<String>> = withContext(Dispatchers.IO) {
     var added = 0
     val errors = mutableListOf<String>()
 
@@ -111,17 +111,20 @@ object NewsEngine {
     // Nouvelles sorties Steam (pas de flux RSS : recherche de la boutique)
     runCatching { added += RadarRepository.scanSteamReleases(db).size }
       .onFailure { e -> errors.add("Steam · Nouveautés: ${e.message ?: "erreur"}") }
+    // Annonces des jeux de la liste de souhaits Steam (si un SteamID est enregistré)
+    runCatching { added += SteamWishlist.scan(db, steamId) }
+      .onFailure { e -> errors.add("${SteamWishlist.SOURCE}: ${e.message ?: "erreur"}") }
     added to errors
   }
 
-  private data class FeedEntry(
+  internal data class FeedEntry(
     val title: String = "",
     val url: String = "",
     val published: String = "",
     val rawSummary: String = "",
   )
 
-  private fun parseRssOrAtom(xml: String): List<FeedEntry> {
+  internal fun parseRssOrAtom(xml: String): List<FeedEntry> {
     val parser = Xml.newPullParser().apply {
       setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
       setInput(StringReader(xml))

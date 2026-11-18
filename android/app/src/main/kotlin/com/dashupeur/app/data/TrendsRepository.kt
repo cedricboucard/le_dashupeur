@@ -20,6 +20,8 @@ data class ApiKeysConfig(
   val twitchClientId: String = "",
   val twitchClientSecret: String = "",
   val youtubeApiKey: String = "",
+  /** SteamID64 (17 chiffres) pour suivre la liste de souhaits : ce n'est pas une clé secrète. */
+  val steamId: String = "",
 ) {
   val hasTwitch: Boolean get() = twitchClientId.isNotBlank() && twitchClientSecret.isNotBlank()
   val hasYoutube: Boolean get() = youtubeApiKey.isNotBlank()
@@ -30,6 +32,7 @@ object ApiKeysStore {
   private const val KEY_TWITCH_ID = "twitch_client_id"
   private const val KEY_TWITCH_SECRET = "twitch_client_secret"
   private const val KEY_YOUTUBE = "youtube_api_key"
+  private const val KEY_STEAM_ID = "steam_id"
 
   fun load(context: Context): ApiKeysConfig {
     val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -37,6 +40,7 @@ object ApiKeysStore {
       twitchClientId = prefs.getString(KEY_TWITCH_ID, "").orEmpty().trim(),
       twitchClientSecret = prefs.getString(KEY_TWITCH_SECRET, "").orEmpty().trim(),
       youtubeApiKey = prefs.getString(KEY_YOUTUBE, "").orEmpty().trim(),
+      steamId = prefs.getString(KEY_STEAM_ID, "").orEmpty().trim(),
     )
   }
 
@@ -45,6 +49,7 @@ object ApiKeysStore {
       .putString(KEY_TWITCH_ID, cfg.twitchClientId.trim())
       .putString(KEY_TWITCH_SECRET, cfg.twitchClientSecret.trim())
       .putString(KEY_YOUTUBE, cfg.youtubeApiKey.trim())
+      .putString(KEY_STEAM_ID, cfg.steamId.trim())
       .apply()
   }
 }

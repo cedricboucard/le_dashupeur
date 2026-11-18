@@ -2,6 +2,7 @@ package com.dashupeur.app.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -61,6 +62,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -319,6 +321,7 @@ private fun ApiKeysDialog(
   var twitchId by remember { mutableStateOf(initial.twitchClientId) }
   var twitchSecret by remember { mutableStateOf(initial.twitchClientSecret) }
   var youtubeKey by remember { mutableStateOf(initial.youtubeApiKey) }
+  var steamId by remember { mutableStateOf(initial.steamId) }
 
   Dialog(onDismissRequest = onDismiss) {
     Surface(
@@ -332,13 +335,13 @@ private fun ApiKeysDialog(
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically,
         ) {
-          Text("🔑 Clés API (Twitch / YouTube)", style = MaterialTheme.typography.titleMedium, color = OnSurface)
+          Text("🔑 Clés API et Steam", style = MaterialTheme.typography.titleMedium, color = OnSurface)
           IconButton(onClick = onDismiss, modifier = Modifier.size(28.dp)) {
             Icon(Icons.Rounded.Close, contentDescription = "Fermer", tint = Outline)
           }
         }
         Text(
-          text = "Enregistrées localement sur l'appareil pour activer les relevés Twitch et YouTube en direct.",
+          text = "Enregistrées localement sur l'appareil pour activer les relevés Twitch et YouTube en direct, et le suivi de ta liste de souhaits Steam.",
           style = MaterialTheme.typography.bodySmall,
           color = OnSurfaceVariant,
         )
@@ -389,6 +392,23 @@ private fun ApiKeysDialog(
           ),
           modifier = Modifier.fillMaxWidth(),
         )
+        OutlinedTextField(
+          value = steamId,
+          onValueChange = { steamId = it },
+          label = { Text("STEAM_ID (liste de souhaits)") },
+          supportingText = { Text("SteamID64 à 17 chiffres, liste de souhaits publique.") },
+          singleLine = true,
+          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+          colors = OutlinedTextFieldDefaults.colors(
+            focusedContainerColor = SurfaceContainerLowest,
+            unfocusedContainerColor = SurfaceContainerLowest,
+            focusedBorderColor = PrimaryContainer,
+            unfocusedBorderColor = SurfaceContainerHighest,
+            focusedTextColor = OnSurface,
+            unfocusedTextColor = OnSurface,
+          ),
+          modifier = Modifier.fillMaxWidth(),
+        )
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.End,
@@ -396,7 +416,7 @@ private fun ApiKeysDialog(
           TextButton(onClick = onDismiss) { Text("Annuler") }
           Spacer(Modifier.width(8.dp))
           Button(
-            onClick = { onSave(ApiKeysConfig(twitchId, twitchSecret, youtubeKey)) },
+            onClick = { onSave(ApiKeysConfig(twitchId, twitchSecret, youtubeKey, steamId)) },
             colors = ButtonDefaults.buttonColors(containerColor = PrimaryContainer, contentColor = OnPrimaryContainer),
           ) {
             Text("Enregistrer")

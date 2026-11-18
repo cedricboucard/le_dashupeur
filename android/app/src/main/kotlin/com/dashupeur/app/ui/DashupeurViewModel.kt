@@ -180,7 +180,7 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
     if (_state.value.isScanningFeeds) return
     _state.update { it.copy(isScanningFeeds = true, flashMessage = null) }
     viewModelScope.launch {
-      val (added, errors) = NewsEngine.fetchAllFeeds(db)
+      val (added, errors) = NewsEngine.fetchAllFeeds(db, _state.value.apiKeys.steamId)
       reloadNewsFromDb()
       reloadXFromDb()
       val msg = if (errors.isEmpty()) {

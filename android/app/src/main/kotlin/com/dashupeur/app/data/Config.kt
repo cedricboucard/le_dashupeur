@@ -17,6 +17,13 @@ object Config {
     "Rock Paper Shotgun" to "https://www.rockpapershotgun.com/feed",
     "Gematsu" to "https://www.gematsu.com/feed",
 
+    // --- Google News : recherches par mot-clé (versions PC, sorties mondiales, bêtas, fermetures) ---
+    "Google News · Versions PC" to "https://news.google.com/rss/search?q=%22PC+version%22+(gacha+OR+mobile+OR+MMORPG)+when:7d&hl=en-US&gl=US&ceid=US:en",
+    "Google News · Lancements mondiaux" to "https://news.google.com/rss/search?q=(%22global+launch%22+OR+%22global+release%22+OR+%22pre-registration%22)+game+when:7d&hl=en-US&gl=US&ceid=US:en",
+    "Google News · Bêtas MMO et gacha" to "https://news.google.com/rss/search?q=(%22closed+beta%22+OR+%22open+beta%22+OR+playtest)+(MMO+OR+MMORPG+OR+gacha)+when:7d&hl=en-US&gl=US&ceid=US:en",
+    "Google News · Fermetures" to "https://news.google.com/rss/search?q=(MMO+OR+gacha+OR+%22live+service%22)+(%22end+of+service%22+OR+shutdown)+when:7d&hl=en-US&gl=US&ceid=US:en",
+    "Google News · MMO et gacha (FR)" to "https://news.google.com/rss/search?q=(MMORPG+OR+gacha)+when:7d&hl=fr&gl=FR&ceid=FR:fr",
+
     // --- YouTube : chaînes de trailers (là où sortent les annonces) ---
     "YouTube · IGN" to "https://www.youtube.com/feeds/videos.xml?channel_id=UCKy1dAqELo0zrOtPkf0eTMw",
     "YouTube · GameSpot" to "https://www.youtube.com/feeds/videos.xml?channel_id=UCbu2SsF-Or3Rsn3NxqODImw",

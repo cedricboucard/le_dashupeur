@@ -1,8 +1,10 @@
 # Flux YouTube d'une chaîne (gratuit, sans clé) : seules les 15 dernières vidéos y figurent
 YOUTUBE_FEED = "https://www.youtube.com/feeds/videos.xml?channel_id={}"
 # Flux d'actualités Steam d'un jeu (gratuit, sans clé) : annonces, patch notes, playtests
-SHOW_NAME = "On épluche l'actu"  # Nom de l'émission YouTube
 STEAM_NEWS_FEED = "https://store.steampowered.com/feeds/news/app/{}/?l=french"
+# Recherche Google News (gratuit, sans clé) : rattrape les petites annonces que la presse suivie ne relaie pas
+GOOGLE_NEWS_FEED = "https://news.google.com/rss/search?q={}&hl=en-US&gl=US&ceid=US:en"
+SHOW_NAME = "On épluche l'actu"  # Nom de l'émission YouTube
 
 RSS_FEEDS = {
     # --- MMO ---
@@ -18,6 +20,13 @@ RSS_FEEDS = {
     "PCGamesN": "https://www.pcgamesn.com/mainrss.xml",
     "Rock Paper Shotgun": "https://www.rockpapershotgun.com/feed",
     "Gematsu": "https://www.gematsu.com/feed",
+
+    # --- Google News : recherches par mot-clé (versions PC, sorties mondiales, bêtas, fermetures) ---
+    "Google News · Versions PC": GOOGLE_NEWS_FEED.format("%22PC+version%22+(gacha+OR+mobile+OR+MMORPG)+when:7d"),
+    "Google News · Lancements mondiaux": GOOGLE_NEWS_FEED.format("(%22global+launch%22+OR+%22global+release%22+OR+%22pre-registration%22)+game+when:7d"),
+    "Google News · Bêtas MMO et gacha": GOOGLE_NEWS_FEED.format("(%22closed+beta%22+OR+%22open+beta%22+OR+playtest)+(MMO+OR+MMORPG+OR+gacha)+when:7d"),
+    "Google News · Fermetures": GOOGLE_NEWS_FEED.format("(MMO+OR+gacha+OR+%22live+service%22)+(%22end+of+service%22+OR+shutdown)+when:7d"),
+    "Google News · MMO et gacha (FR)": "https://news.google.com/rss/search?q=(MMORPG+OR+gacha)+when:7d&hl=fr&gl=FR&ceid=FR:fr",
 
     # --- YouTube : chaînes de trailers (là où sortent les annonces) ---
     "YouTube · IGN": YOUTUBE_FEED.format("UCKy1dAqELo0zrOtPkf0eTMw"),

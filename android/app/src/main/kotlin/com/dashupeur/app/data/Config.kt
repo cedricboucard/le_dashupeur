@@ -71,5 +71,11 @@ object Config {
   )
 
   const val SHOW_NAME = "On épluche l'actu" // Nom de l'émission YouTube
+
+  // GlobeNewswire refuse les requêtes de l'app : liens de veille manuelle (nom → recherche)
+  val MANUAL_WATCH_LINKS: List<Pair<String, String>> = listOf(
+    "🎮 Jeu vidéo" to "https://www.globenewswire.com/en/search/keyword/video%20game",
+    "⚔️ MMORPG" to "https://www.globenewswire.com/en/search/keyword/MMORPG",
+  )
   const val USER_AGENT = "LeDashupeur/1.0 (+https://github.com/cedricboucard/le_dashupeur)"
 }

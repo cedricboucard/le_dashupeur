@@ -52,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dashupeur.app.data.Config
 import com.dashupeur.app.data.NewsEngine
 import com.dashupeur.app.data.NewsItem
 import com.dashupeur.app.ui.DashupeurUiState
@@ -234,6 +235,36 @@ fun ActusScreen(
               ),
               border = null,
             )
+          }
+        }
+
+        // Veille manuelle : sites qu'on ne peut pas scanner automatiquement
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+          Text(
+            text = "GlobeNewswire :",
+            style = MaterialTheme.typography.labelMedium,
+            color = OnSurfaceVariant,
+          )
+          Config.MANUAL_WATCH_LINKS.forEach { (label, url) ->
+            Surface(
+              color = SurfaceContainerLow,
+              shape = RoundedCornerShape(8.dp),
+              modifier = Modifier.clickable {
+                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+              },
+            ) {
+              Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+              ) {
+                Text(label, style = MaterialTheme.typography.labelMedium, color = OnSurface)
+                Spacer(Modifier.width(4.dp))
+                Icon(Icons.Rounded.OpenInNew, contentDescription = null, tint = Outline, modifier = Modifier.size(14.dp))
+              }
+            }
           }
         }
       }

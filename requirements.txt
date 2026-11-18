@@ -10,6 +10,9 @@ feedparser>=6.0.14
 requests>=2.34.2
 beautifulsoup4>=4.15.0
 
+# Bandeaux (Lower Thirds) en PNG
+pillow>=13.0.0
+
 # Téléchargement des trailers (nécessite aussi ffmpeg sur le système)
 yt-dlp>=2026.10.26
 

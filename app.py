@@ -7,6 +7,7 @@ from db import (add_x_pick, clear_inbox, clear_x_picks, get_all_news, get_news, 
                 remove_x_pick, update_status)
 from curator import propose_by_score, propose_with_ai
 from engine import export_hebdo, fetch_all_feeds, parse_published
+import lowerthirds
 from radar import _item, fetch_epic_free, fetch_gamerpower, fetch_steam_f2p, radar_news_id, send_to_hebdo
 from trends import (SOURCE_LABELS, UNITS, active_sources, collect_all, compute_trends, history,
                     latest_snapshot, snapshot_times, trend_summary)
@@ -254,6 +255,82 @@ with tab_hebdo:
             )
         st.success(f"Pack généré avec succès dans : `{out_path}` !")
         st.code((out_path / "script_episode.md").read_text(encoding="utf-8"), language="markdown")
+
+    # --- Bandeaux (Lower Thirds) ---
+    st.divider()
+    st.markdown("#### 🎬 Bandeaux (Lower Thirds)")
+    st.caption(
+        "PNG transparents de la taille de la vidéo, bandeau en bas à gauche : pose-les tels quels au-dessus "
+        "de la vidéo sur ta timeline. Retouche les textes dans le tableau (ajoute des lignes pour des bandeaux libres)."
+    )
+
+    @st.cache_data(show_spinner="Préparation du ZIP des bandeaux…", max_entries=8)
+    def cached_lower_thirds_zip(rows_key: tuple, style: str, size: tuple[int, int]) -> bytes:
+        """ZIP gardé en cache : il n'est refait que si les textes, le style ou la taille changent."""
+        rows_ = [dict(zip(("title", "subtitle", "kicker"), r)) for r in rows_key]
+        return lowerthirds.build_zip(rows_, style, size)
+
+    def lower_third_row(item: dict, kicker: str) -> dict:
+        title, subtitle = item["title"], item["source"]
+        # Google News met le nom du site à la fin du titre (« … - JeuxOnLine ») : il devient le sous-titre
+        if item["source"].startswith("Google News") and " - " in title:
+            title, subtitle = title.rsplit(" - ", 1)
+        return {"Étiquette": kicker, "Titre": title, "Sous-titre": subtitle}
+
+    lt_rows = [lower_third_row(i, "Gros sujet") for i in major_items] + [lower_third_row(i, "En vrac") for i in vrac_items]
+    if not lt_rows:
+        lt_rows = [{"Étiquette": "", "Titre": "", "Sous-titre": ""}]
+    col_style, col_size = st.columns(2)
+    lt_style = col_style.segmented_control("Style", lowerthirds.STYLES, default="Dashupeur", key="lt_style") or "Dashupeur"
+    lt_size_label = col_size.segmented_control("Taille", list(lowerthirds.SIZES), default="1080p (1920×1080)",
+                                               key="lt_size") or "1080p (1920×1080)"
+    lt_size = lowerthirds.SIZES[lt_size_label]
+    # La clé change avec l'épisode : le tableau repart des news de l'épisode quand on en ajoute ou retire une
+    episode_key = "_".join(i["id"][:6] for i in major_items + vrac_items) or "vide"
+    edited = st.data_editor(
+        lt_rows,
+        num_rows="dynamic",
+        width="stretch",
+        key=f"lt_editor_{episode_key}",
+        column_config={
+            "Étiquette": st.column_config.TextColumn("Étiquette", help="Petite étiquette au-dessus (facultative)", width="small"),
+            "Titre": st.column_config.TextColumn("Titre", help="2 lignes au plus : la police rétrécit, puis le texte est coupé", width="large"),
+            "Sous-titre": st.column_config.TextColumn("Sous-titre", help="Source, nom du jeu, date… (facultatif)"),
+        },
+    )
+    rows = [
+        {"title": r.get("Titre") or "", "subtitle": r.get("Sous-titre") or "", "kicker": r.get("Étiquette") or ""}
+        for r in edited
+        if lowerthirds.clean_text(r.get("Titre") or "")
+    ]
+    if rows:
+        labels = [f"{n:02d} · {r['title'][:70]}" for n, r in enumerate(rows, start=1)]
+        pick = st.selectbox("👀 Aperçu", range(len(rows)), format_func=lambda i: labels[i], key="lt_preview")
+        row = rows[pick]
+        missing = lowerthirds.missing_glyphs(row["title"] + row["subtitle"] + row["kicker"])
+        if missing:
+            st.warning(f"La police ne sait pas dessiner ces caractères (ils apparaîtraient en carrés) : {' '.join(missing)}. "
+                       "Remplace-les dans le tableau, par exemple par le nom latin du jeu.")
+        preview = lowerthirds.render_lower_third(row["title"], row["subtitle"], row["kicker"], lt_style, (1920, 1080))
+        st.image(lowerthirds.preview_on_background(preview), caption="Aperçu sur un fond de test (le PNG exporté est transparent)",
+                 width="stretch")
+        col_one, col_all = st.columns(2)
+        col_one.download_button(
+            "⬇️ Ce bandeau (PNG)",
+            lowerthirds.to_png_bytes(lowerthirds.render_lower_third(row["title"], row["subtitle"], row["kicker"], lt_style, lt_size)),
+            file_name=f"{pick + 1:02d}_{lowerthirds.slug(row['title'])}.png",
+            mime="image/png",
+            width="stretch",
+        )
+        col_all.download_button(
+            f"📦 Tous les bandeaux ({len(rows)}, ZIP)",
+            cached_lower_thirds_zip(tuple(tuple(r.values()) for r in rows), lt_style, lt_size),
+            file_name=f"Bandeaux_{datetime.now():%Y-%m-%d}.zip",
+            mime="application/zip",
+            type="primary",
+            width="stretch",
+            on_click="ignore",
+        )
 
 # --- ONGLET 3 : RADAR JEUX GRATUITS & F2P ---
 RADAR_SOURCES = {

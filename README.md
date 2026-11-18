@@ -34,6 +34,7 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 | 🎬 **Pack de l'épisode** | Génère un dossier daté avec le script, la description YouTube (chapitres + sources) et un sous-dossier par gros sujet. |
 | 🎞️ **Trailers** | Télécharge le premier trailer officiel trouvé sur YouTube pour chaque gros sujet (jusqu'en 1080p). |
 | 🤖 **Résumés IA** | Traduit et résume chaque gros sujet en 3 points percutants, prêts pour le script vidéo. |
+| 🎬 **Bandeaux (Lower Thirds)** | Dans l'onglet de l'émission : un bandeau PNG transparent par news de l'épisode (titre, sous-titre et étiquette « Gros sujet » / « En vrac », modifiables dans un tableau), en 1080p ou 4K, en 3 styles. Aperçu sur fond de test, puis téléchargement d'un bandeau ou de tous en ZIP, prêts à poser sur la timeline. Police Lato fournie (licence OFL). |
 | 🎁 **Radar Jeux Gratuits & F2P** | En temps réel : jeux gratuits de l'**Epic Games Store** (maintenant + semaine prochaine), jeux/DLC/bêtas offerts via **GamerPower** (Steam, GOG, Epic, Itch.io…) et nouveaux **Free-to-Play Steam** classés par joueurs connectés en direct. |
 | 🔗 **Pont vers l'émission** | Depuis le Radar, **🔥 Gros Sujet** ou **⚡ En Vrac** envoie le jeu dans le conducteur, avec son résumé (valeur, date de fin de l'offre, joueurs en ligne) pour le script et le trailer. |
 | 🐦 **Espace X** | Pioche librement des news (sans toucher à l'émission) et obtiens des **tweets séparés** ou un **thread** numéroté (1/5, 2/5…) avec lien de la source. Compteur de caractères calculé comme X (lien = 23, emoji = 2), retouche du texte, rédaction en français par IA (optionnel), bouton 📋 pour copier et **𝕏 Ouvrir dans X** avec le tweet pré-rempli. |
@@ -311,6 +312,7 @@ le_dashupeur/
 ├── app.py        # Interface web Streamlit
 ├── engine.py     # Scan RSS, score, résumés IA, trailers et export
 ├── radar.py      # Radar Jeux Gratuits & F2P (Epic, GamerPower, Steam)
+├── lowerthirds.py # Bandeaux (Lower Thirds) en PNG transparent
 ├── trends.py     # Détecteur de tendances (relevés + calcul)
 ├── xposts.py     # Espace X : tweets, threads et compteur de caractères
 ├── curator.py    # Proposition automatique de l'épisode (IA ou score)

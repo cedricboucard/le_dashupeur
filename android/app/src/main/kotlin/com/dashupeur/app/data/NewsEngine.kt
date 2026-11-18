@@ -109,7 +109,7 @@ object NewsEngine {
       }
     }
     // Nouvelles sorties Steam (pas de flux RSS : recherche de la boutique)
-    runCatching { added += RadarRepository.scanSteamReleases(db) }
+    runCatching { added += RadarRepository.scanSteamReleases(db).size }
       .onFailure { e -> errors.add("Steam · Nouveautés: ${e.message ?: "erreur"}") }
     added to errors
   }

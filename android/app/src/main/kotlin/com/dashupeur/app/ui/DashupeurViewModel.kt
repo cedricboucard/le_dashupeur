@@ -12,6 +12,7 @@ import com.dashupeur.app.data.NewsItem
 import com.dashupeur.app.data.RadarItem
 import com.dashupeur.app.data.RadarRepository
 import com.dashupeur.app.data.SnapshotRow
+import com.dashupeur.app.data.SteamAlerts
 import com.dashupeur.app.data.TrendGame
 import com.dashupeur.app.data.TrendPoint
 import com.dashupeur.app.data.TrendsRepository
@@ -85,6 +86,8 @@ data class DashupeurUiState(
   val isCollectingTrends: Boolean = false,
   val apiKeys: ApiKeysConfig = ApiKeysConfig(),
   val showApiKeysDialog: Boolean = false,
+  /** Notifications des nouvelles sorties Steam (vérification toutes les 3 h). */
+  val steamAlertsEnabled: Boolean = false,
 
   // Hebdo
   val hebdoExport: HebdoExportResult? = null,
@@ -113,7 +116,8 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
   private val timeFmt = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
 
   init {
-    _state.update { it.copy(apiKeys = ApiKeysStore.load(app)) }
+    _state.update { it.copy(apiKeys = ApiKeysStore.load(app), steamAlertsEnabled = SteamAlerts.isEnabled(app)) }
+    SteamAlerts.schedule(app) // reprogramme la vérification après une mise à jour de l'app
     reloadAllFromDb()
     loadRadar(RadarSource.EPIC, forceRefresh = false)
   }
@@ -127,6 +131,27 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
         apiKeys = keys,
         showApiKeysDialog = false,
         flashMessage = "Clés API enregistrées sur l'appareil.",
+      )
+    }
+  }
+
+  /** permissionGranted : false si l'utilisateur a refusé les notifications (Android 13 et plus). */
+  fun setSteamAlerts(enabled: Boolean, permissionGranted: Boolean = true) {
+    if (enabled && !permissionGranted) {
+      _state.update {
+        it.copy(flashMessage = "Notifications refusées : autorise-les dans les réglages Android pour recevoir les sorties Steam.")
+      }
+      return
+    }
+    SteamAlerts.setEnabled(getApplication(), enabled)
+    _state.update {
+      it.copy(
+        steamAlertsEnabled = enabled,
+        flashMessage = if (enabled) {
+          "🔔 Alertes sorties Steam activées : vérification maintenant, puis toutes les 3 h."
+        } else {
+          "🔕 Alertes sorties Steam coupées."
+        },
       )
     }
   }

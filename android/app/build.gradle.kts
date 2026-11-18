@@ -11,8 +11,8 @@ android {
     applicationId = "com.dashupeur.app"
     minSdk = 26
     targetSdk = 36
-    versionCode = 9
-    versionName = "1.8"
+    versionCode = 10
+    versionName = "1.9"
   }
 
   buildTypes {
@@ -63,6 +63,8 @@ dependencies {
   implementation(libs.androidx.compose.material3)
   implementation("androidx.compose.material:material-icons-extended")
   implementation("io.coil-kt:coil-compose:2.7.0")
+  // Tâches de fond (alertes des sorties Steam)
+  implementation("androidx.work:work-runtime-ktx:2.10.1")
   // Tooling
   debugImplementation(libs.androidx.compose.ui.tooling)
   // Instrumented tests

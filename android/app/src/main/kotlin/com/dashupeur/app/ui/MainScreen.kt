@@ -20,6 +20,8 @@ import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.NotificationsNone
 import androidx.compose.material.icons.rounded.LocalFireDepartment
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Radar
@@ -43,6 +45,10 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -83,6 +89,19 @@ import com.dashupeur.app.ui.theme.SurfaceContainerLowest
 @Composable
 fun LeDashupeurApp(viewModel: DashupeurViewModel = viewModel()) {
   val state by viewModel.state.collectAsState()
+  // Android 13 et plus : il faut demander la permission avant d'activer les alertes
+  val notificationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+    viewModel.setSteamAlerts(enabled = true, permissionGranted = granted)
+  }
+  val toggleSteamAlerts = {
+    if (state.steamAlertsEnabled) {
+      viewModel.setSteamAlerts(false)
+    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+    } else {
+      viewModel.setSteamAlerts(true)
+    }
+  }
   val snackbarHostState = remember { SnackbarHostState() }
 
   LaunchedEffect(state.flashMessage) {
@@ -138,6 +157,13 @@ fun LeDashupeurApp(viewModel: DashupeurViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
           ) {
+            IconButton(onClick = toggleSteamAlerts) {
+              Icon(
+                imageVector = if (state.steamAlertsEnabled) Icons.Rounded.NotificationsActive else Icons.Rounded.NotificationsNone,
+                contentDescription = if (state.steamAlertsEnabled) "Couper les alertes sorties Steam" else "Activer les alertes sorties Steam",
+                tint = if (state.steamAlertsEnabled) Secondary else OnSurfaceVariant,
+              )
+            }
             IconButton(onClick = viewModel::openApiKeysDialog) {
               Icon(
                 imageVector = Icons.Rounded.Key,

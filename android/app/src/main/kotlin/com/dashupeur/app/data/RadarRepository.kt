@@ -287,8 +287,9 @@ object RadarRepository {
    * Sorties Steam des derniers jours pour le scan de l'actualité : les « nouveautés populaires »
    * de Steam, et les nouveaux free-to-play ayant au moins minF2pPlayers joueurs connectés
    * (pour écarter les dizaines de petits jeux gratuits publiés chaque jour).
+   * Renvoie les sorties ajoutées à la base (celles qui n'y étaient pas encore).
    */
-  suspend fun scanSteamReleases(db: DashupeurDb, maxAgeDays: Long = 3, minF2pPlayers: Int = 50): Int =
+  suspend fun scanSteamReleases(db: DashupeurDb, maxAgeDays: Long = 3, minF2pPlayers: Int = 50): List<RadarItem> =
     withContext(Dispatchers.IO) {
       val now = Instant.now()
       fun recent(items: List<RadarItem>) =
@@ -303,7 +304,7 @@ object RadarRepository {
         f2p.map { item -> async { item.copy(players = item.steamAppId?.let { steamPlayers(it) }) } }.awaitAll()
       }.filter { (it.players ?: 0) >= minF2pPlayers }.forEach { found[it.steamAppId!!] = it }
 
-      var added = 0
+      val added = mutableListOf<RadarItem>()
       for (item in found.values) {
         val newsId = radarNewsId(item)
         if (db.hasNews(newsId)) continue // déjà en base : inutile de redemander sa description à Steam
@@ -325,7 +326,7 @@ object RadarRepository {
             status = "inbox",
           )
         )
-        if (inserted) added++
+        if (inserted) added.add(item)
       }
       added
     }

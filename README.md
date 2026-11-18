@@ -27,7 +27,7 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 
 | | |
 |---|---|
-| 📡 **Veille RSS** | Scan de 27 sources : presse MMO et jeu vidéo (MassivelyOP, MMORPG.com, Jeuxvideo.com, Gamekult, ActuGaming, PC Gamer, PCGamesN, Rock Paper Shotgun, Gematsu, Reddit r/MMORPG), **recherches Google News** (versions PC, lancements mondiaux et préinscriptions, bêtas MMO et gacha, fermetures, Com2uS, MMO et gacha en français), **chaînes YouTube** de trailers et de jeux (IGN, GameSpot, GameTrailers, PlayStation, Xbox, chaînes de trailers indés, The First Descendant) et **actualités Steam** des jeux suivis (annonces, playtests, patch notes : Under a Rock, The First Descendant, ARES: The Iron Vanguard). Le scan ajoute aussi les **nouvelles sorties Steam** des 3 derniers jours : les nouveautés populaires mises en avant par Steam et les nouveaux free-to-play qui ont au moins 50 joueurs connectés. Les doublons sont ignorés automatiquement. Des liens vers **GlobeNewswire** (communiqués « video game » et « MMORPG ») permettent une veille manuelle. |
+| 📡 **Veille RSS** | Scan de 28 sources : presse MMO et jeu vidéo (MassivelyOP, MMORPG.com, Jeuxvideo.com, Gamekult, ActuGaming, PC Gamer, PCGamesN, Rock Paper Shotgun, Gematsu, Reddit r/MMORPG), **recherches Google News** (versions PC, lancements mondiaux et préinscriptions, bêtas MMO et gacha, playtests et accès anticipé, fermetures, Com2uS, MMO et gacha en français), **chaînes YouTube** de trailers et de jeux (IGN, GameSpot, GameTrailers, PlayStation, Xbox, chaînes de trailers indés, The First Descendant) et **actualités Steam** des jeux suivis (annonces, playtests, patch notes : Under a Rock, The First Descendant, ARES: The Iron Vanguard). Le scan ajoute aussi les **nouvelles sorties Steam** des 3 derniers jours : les nouveautés populaires mises en avant par Steam et les nouveaux free-to-play qui ont au moins 50 joueurs connectés. Avec un `STEAM_ID` dans `.env`, il suit aussi ta **liste de souhaits Steam** : les annonces des 7 derniers jours de chaque jeu (playtests, dates de sortie, week-ends gratuits) arrivent dans la boîte de réception avec un bonus de pertinence. Les doublons sont ignorés automatiquement. Des liens vers **GlobeNewswire** (communiqués « video game » et « MMORPG ») permettent une veille manuelle. |
 | 🎯 **Score de pertinence** | Chaque news gagne des points selon les mots-clés trouvés (MMORPG, free-to-play, bêta, shutdown…). Les news à 15 points ou plus sont marquées 🔥. |
 | 📥 **Boîte de réception** | Filtre par score minimum ou par mot-clé, puis classe chaque news en **🔥 Gros Sujet**, **⚡ En Vrac** ou **🗑️ Ignorer**. |
 | 🤖 **Proposition automatique** | Un bouton choisit 10 gros sujets et 8 news en vrac (par l'IA, ou au score sans IA), sans doublons, à relire et valider. |
@@ -165,6 +165,12 @@ cp .env.example .env
 5. Colle-la dans `.env` (`YOUTUBE_API_KEY=`).
 
 > Le quota gratuit de YouTube est de 10 000 unités par jour ; le détecteur en utilise environ 4 000.
+
+### Liste de souhaits Steam (optionnel)
+
+1. Sur Steam : **Profil → Modifier le profil → Paramètres de confidentialité** : mets « Détails du jeu » sur **Public** (la liste de souhaits en dépend).
+2. Ton SteamID64 (17 chiffres, commence par `7656119`) est dans l'adresse de ton profil `steamcommunity.com/profiles/<id>`. Si ton profil a une adresse personnalisée, un site comme steamid.io le retrouve.
+3. Ajoute-le dans `.env` : `STEAM_ID=7656119…`. Aucune clé API n'est nécessaire.
 
 ### La tâche planifiée
 
@@ -313,6 +319,7 @@ le_dashupeur/
 ├── engine.py     # Scan RSS, score, résumés IA, trailers et export
 ├── radar.py      # Radar Jeux Gratuits & F2P (Epic, GamerPower, Steam)
 ├── lowerthirds.py # Bandeaux (Lower Thirds) en PNG transparent
+├── wishlist.py   # Suivi de la liste de souhaits Steam
 ├── trends.py     # Détecteur de tendances (relevés + calcul)
 ├── xposts.py     # Espace X : tweets, threads et compteur de caractères
 ├── curator.py    # Proposition automatique de l'épisode (IA ou score)

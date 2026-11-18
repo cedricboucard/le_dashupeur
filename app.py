@@ -8,6 +8,7 @@ from db import (add_x_pick, clear_inbox, clear_x_picks, get_all_news, get_news, 
 from curator import propose_by_score, propose_with_ai
 from engine import export_hebdo, fetch_all_feeds, parse_published
 import lowerthirds
+import wishlist
 from radar import _item, fetch_epic_free, fetch_gamerpower, fetch_steam_f2p, radar_news_id, send_to_hebdo
 from trends import (SOURCE_LABELS, UNITS, active_sources, collect_all, compute_trends, history,
                     latest_snapshot, snapshot_times, trend_summary)
@@ -71,6 +72,10 @@ with st.sidebar:
                          use_container_width=True, help="Communiqués contenant « video game »")
     gnw_col2.link_button("⚔️ MMORPG", "https://www.globenewswire.com/en/search/keyword/MMORPG",
                          use_container_width=True, help="Communiqués contenant « MMORPG »")
+
+    if not wishlist.steam_id():
+        st.caption("⭐ Liste de souhaits Steam non suivie : ajoute `STEAM_ID=<ton SteamID64>` dans le fichier "
+                   ".env (liste publique) pour recevoir les annonces de tes jeux.")
 
     st.divider()
     st.header("🤖 Options IA (Optionnel)")

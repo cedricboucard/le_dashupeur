@@ -108,6 +108,13 @@ def fetch_all_feeds() -> tuple[int, list[str]]:
     except Exception as e:
         errors.append(f"Steam · Nouveautés: {e}")
 
+    # Annonces des jeux de la liste de souhaits Steam (si STEAM_ID est configuré dans .env)
+    from wishlist import scan_wishlist
+    try:
+        added += scan_wishlist()
+    except Exception as e:
+        errors.append(f"Steam · Liste de souhaits: {e}")
+
     return added, errors
 
 

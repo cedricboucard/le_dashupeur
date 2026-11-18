@@ -52,7 +52,7 @@ def load_env() -> dict:
                 key, _, value = line.partition("=")
                 values[key.strip()] = value.strip().strip('"').strip("'")
     return {k: os.environ.get(k) or values.get(k, "") for k in
-            ("TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET", "YOUTUBE_API_KEY")}
+            ("TWITCH_CLIENT_ID", "TWITCH_CLIENT_SECRET", "YOUTUBE_API_KEY", "STEAM_ID")}
 
 
 def active_sources(env: dict | None = None) -> dict[str, bool]:

@@ -76,6 +76,7 @@ import com.dashupeur.app.ui.theme.Tertiary
 fun TrendsScreen(
   state: DashupeurUiState,
   onSelectWindow: (Int) -> Unit,
+  onSelectPlatform: (String?) -> Unit,
   onMinGrowthChange: (Int) -> Unit,
   onToggleMultiPlatform: () -> Unit,
   onCollectNow: () -> Unit,
@@ -198,6 +199,19 @@ fun TrendsScreen(
           }
         }
 
+        // Plateforme : chaque source a son propre classement (spectateurs, vues et joueurs ne se comparent pas)
+        Row(
+          modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(SurfaceContainerLowest)
+            .padding(3.dp),
+        ) {
+          TimeframeChip("Toutes", state.trendPlatform == null) { onSelectPlatform(null) }
+          TimeframeChip("Twitch", state.trendPlatform == "twitch") { onSelectPlatform("twitch") }
+          TimeframeChip("YouTube", state.trendPlatform == "youtube") { onSelectPlatform("youtube") }
+          TimeframeChip("Steam", state.trendPlatform == "steam") { onSelectPlatform("steam") }
+        }
+
         Slider(
           value = state.trendMinGrowth.toFloat(),
           onValueChange = { onMinGrowthChange(((it / 5).toInt()) * 5) },
@@ -303,7 +317,7 @@ fun TrendsScreen(
         item {
           Surface(color = SurfaceContainer, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
             Text(
-              text = "Aucun jeu ne dépasse +${state.trendMinGrowth} %. Baisse le curseur ou désactive le filtre Multi.",
+              text = "Aucun jeu ne dépasse +${state.trendMinGrowth} %. Baisse le curseur, change de plateforme ou désactive le filtre Multi.",
               style = MaterialTheme.typography.bodyMedium,
               color = OnSurfaceVariant,
               modifier = Modifier.padding(16.dp),

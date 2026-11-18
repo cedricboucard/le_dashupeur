@@ -246,6 +246,7 @@ fun LeDashupeurApp(viewModel: DashupeurViewModel = viewModel()) {
         MainTab.TENDANCES -> TrendsScreen(
           state = state,
           onSelectWindow = viewModel::setTrendWindow,
+          onSelectPlatform = viewModel::setTrendPlatform,
           onMinGrowthChange = viewModel::setTrendMinGrowth,
           onToggleMultiPlatform = viewModel::toggleMultiPlatformOnly,
           onCollectNow = viewModel::collectSteamTrendsNow,

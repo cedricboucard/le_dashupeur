@@ -76,6 +76,7 @@ data class DashupeurUiState(
   // Tendances
   val trendWindowHours: Int = 24,
   val trendMinGrowth: Int = 25,
+  val trendPlatform: String? = null, // null = toutes les plateformes
   val multiPlatformOnly: Boolean = false,
   val trends: List<TrendGame> = emptyList(),
   val trendHistories: Map<String, Map<String, List<TrendPoint>>> = emptyMap(),
@@ -254,12 +255,19 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
     reloadTrendsFromDb()
   }
 
+  /** Classement limité à une plateforme (twitch, youtube ou steam), ou null pour toutes. */
+  fun setTrendPlatform(platform: String?) {
+    // Le filtre « Multi » n'a pas de sens sur une seule plateforme
+    _state.update { it.copy(trendPlatform = platform, multiPlatformOnly = if (platform != null) false else it.multiPlatformOnly) }
+    reloadTrendsFromDb()
+  }
+
   fun setTrendMinGrowth(minGrowth: Int) {
     _state.update { it.copy(trendMinGrowth = minGrowth) }
   }
 
   fun toggleMultiPlatformOnly() {
-    _state.update { it.copy(multiPlatformOnly = !it.multiPlatformOnly) }
+    _state.update { it.copy(multiPlatformOnly = !it.multiPlatformOnly, trendPlatform = null) }
   }
 
   fun collectSteamTrendsNow() {
@@ -395,8 +403,9 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
   private fun reloadTrendsFromDb() {
     viewModelScope.launch {
       val windowHours = _state.value.trendWindowHours
+      val sources = _state.value.trendPlatform?.let { listOf(it) } ?: listOf("twitch", "steam", "youtube")
       val data = withContext(Dispatchers.IO) {
-        val trends = TrendsRepository.computeTrends(db, windowHours)
+        val trends = TrendsRepository.computeTrends(db, windowHours, sources)
         val histories = trends.take(30).associate { it.key to db.history(it.key, days = 7) }
         val lastTimes = listOf("twitch", "steam", "youtube").associateWith { src ->
           val times = db.snapshotTimes(src)

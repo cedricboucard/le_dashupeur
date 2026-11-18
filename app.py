@@ -461,15 +461,22 @@ if tab_trends.open:
         if "trends_flash" in st.session_state:
             st.success(st.session_state.pop("trends_flash"))
 
-        col_win, col_min = st.columns(2)
+        col_win, col_src, col_min = st.columns([1, 2, 2])
         period = col_win.segmented_control("Période", ["24 h", "7 jours"], default="24 h", key="trend_period")
         window_hours = 168 if period == "7 jours" else 24
+        platform_choices = {"Toutes": ("twitch", "steam", "youtube")} | {
+            SOURCE_LABELS[s]: (s,) for s in ("twitch", "youtube", "steam")
+        }
+        platform = col_src.segmented_control("Plateforme", list(platform_choices), default="Toutes",
+                                             key="trend_platform") or "Toutes"
         min_growth = col_min.slider("Hausse minimum", 10, 300, 25, step=5, format="%d %%", key="trend_min")
 
-        trends_list = compute_trends(window_hours)
+        trends_list = compute_trends(window_hours, sources=platform_choices[platform])
         if not trends_list:
             st.info(
-                f"Pas encore assez d'historique pour la période {period} : il faut un relevé datant "
+                f"Pas encore assez d'historique pour la période {period}"
+                + ("" if platform == "Toutes" else f" sur {platform}")
+                + " : il faut un relevé datant "
                 f"d'environ {period}. Le classement apparaîtra automatiquement à ce moment-là."
             )
             # Un top par source : spectateurs, joueurs et vues ne se comparent pas entre eux
@@ -487,7 +494,8 @@ if tab_trends.open:
             rising = [g for g in trends_list if g["score"] is None or g["score"] >= min_growth][:30]
             st.subheader(f"🚀 Ça monte ({len(rising)})")
             if not rising:
-                st.info("Aucun jeu ne dépasse ce seuil de hausse. Baisse le curseur « Hausse minimum ».")
+                st.info("Aucun jeu ne dépasse ce seuil de hausse. Baisse le curseur « Hausse minimum » "
+                        "ou choisis une autre plateforme.")
             for game in rising:
                 render_trend_item(game, window_hours, in_hebdo)
 

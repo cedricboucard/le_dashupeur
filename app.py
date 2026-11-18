@@ -63,6 +63,14 @@ with st.sidebar:
         clear_inbox()
         st.rerun()
 
+    # GlobeNewswire refuse les requêtes de l'app : on le consulte à la main
+    st.caption("🔗 Veille manuelle : communiqués de presse GlobeNewswire")
+    gnw_col1, gnw_col2 = st.columns(2)
+    gnw_col1.link_button("🎮 Jeu vidéo", "https://www.globenewswire.com/en/search/keyword/video%20game",
+                         use_container_width=True, help="Communiqués contenant « video game »")
+    gnw_col2.link_button("⚔️ MMORPG", "https://www.globenewswire.com/en/search/keyword/MMORPG",
+                         use_container_width=True, help="Communiqués contenant « MMORPG »")
+
     st.divider()
     st.header("🤖 Options IA (Optionnel)")
     use_ai = st.checkbox("Activer l'IA (résumés de l'émission, tweets en français)")

@@ -29,6 +29,8 @@ RSS_FEEDS = {
     "Google News · Playtests et accès anticipé": GOOGLE_NEWS_FEED.format("(playtest+OR+%22early+access%22+OR+%22free+weekend%22)+(Steam+OR+PC)+-review+when:3d"),
     "Google News · Fermetures": GOOGLE_NEWS_FEED.format("(MMO+OR+gacha+OR+%22live+service%22)+(%22end+of+service%22+OR+shutdown)+when:7d"),
     "Google News · Com2uS": GOOGLE_NEWS_FEED.format("Com2uS+when:7d"),
+    # TEMPORAIRE : salon G-Star (Busan, 19-22 novembre 2026), à retirer après le salon
+    "Google News · G-Star 2026": GOOGLE_NEWS_FEED.format("(%22G-Star+2026%22+OR+%22G-Star%22+Busan)+when:7d"),
     "Google News · MMO et gacha (FR)": "https://news.google.com/rss/search?q=(MMORPG+OR+gacha)+when:7d&hl=fr&gl=FR&ceid=FR:fr",
 
     # --- YouTube : chaînes de trailers (là où sortent les annonces) ---

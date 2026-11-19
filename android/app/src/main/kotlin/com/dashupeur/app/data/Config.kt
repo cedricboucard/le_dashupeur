@@ -23,6 +23,8 @@ object Config {
     "Google News · Playtests et accès anticipé" to "https://news.google.com/rss/search?q=(playtest+OR+%22early+access%22+OR+%22free+weekend%22)+(Steam+OR+PC)+-review+when:3d&hl=en-US&gl=US&ceid=US:en",
     "Google News · Fermetures" to "https://news.google.com/rss/search?q=(MMO+OR+gacha+OR+%22live+service%22)+(%22end+of+service%22+OR+shutdown)+when:7d&hl=en-US&gl=US&ceid=US:en",
     "Google News · Com2uS" to "https://news.google.com/rss/search?q=Com2uS+when:7d&hl=en-US&gl=US&ceid=US:en",
+    // TEMPORAIRE : salon G-Star (Busan, 19-22 novembre 2026), à retirer après le salon
+    "Google News · G-Star 2026" to "https://news.google.com/rss/search?q=(%22G-Star+2026%22+OR+%22G-Star%22+Busan)+when:7d&hl=en-US&gl=US&ceid=US:en",
     "Google News · MMO et gacha (FR)" to "https://news.google.com/rss/search?q=(MMORPG+OR+gacha)+when:7d&hl=fr&gl=FR&ceid=FR:fr",
 
     // --- YouTube : chaînes de trailers (là où sortent les annonces) ---

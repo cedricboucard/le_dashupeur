@@ -215,12 +215,12 @@ object NewsEngine {
       linksLines.add("- ${item.title} : ${item.url}")
     }
 
-    scriptLines.add("\n## ⚡ NEWS EN VRAC\n")
-    descLines.add("XX:XX - News en vrac")
+    scriptLines.add("\n## ⚡ LES ÉPLUCHURES\n")
+    descLines.add("XX:XX - Les épluchures")
     for (item in vracs) {
       scriptLines.add("- **${item.title}** (${item.source}) -> ${item.url}")
       scriptLines.add("  > ${item.summary.take(200)}...\n")
-      linksLines.add("- [Vrac] ${item.title} : ${item.url}")
+      linksLines.add("- [Épluchure] ${item.title} : ${item.url}")
     }
 
     val scriptMd = scriptLines.joinToString("\n")

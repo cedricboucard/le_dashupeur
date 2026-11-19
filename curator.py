@@ -1,4 +1,4 @@
-"""Proposition automatique de l'épisode d'« On épluche l'actu » : 10 gros sujets + quelques news en vrac, choisis par l'IA (ou par le score)."""
+"""Proposition automatique de l'épisode d'« On épluche l'actu » : 10 gros sujets + quelques épluchures (news courtes), choisis par l'IA (ou par le score)."""
 import json
 import re
 import unicodedata
@@ -77,7 +77,7 @@ def _extract_json(text: str) -> dict:
 
 
 def propose_with_ai(news: list[dict], ai_cfg: dict) -> dict:
-    """L'IA choisit 10 gros sujets et quelques news en vrac parmi les meilleures candidates."""
+    """L'IA choisit 10 gros sujets et quelques épluchures parmi les meilleures candidates."""
     pool = candidates(news)
     by_ref = {f"n{i}": item for i, item in enumerate(pool, start=1)}
     lines = "\n".join(
@@ -87,7 +87,7 @@ def propose_with_ai(news: list[dict], ai_cfg: dict) -> dict:
         "Tu es rédacteur en chef de « On épluche l'actu », l'émission hebdomadaire d'actualité jeu vidéo d'une chaîne "
         "YouTube française (style Dashup : MMO, free-to-play, bêtas, annonces, sorties, fermetures de jeux).\n"
         f"Parmi les news ci-dessous, choisis exactement {MAJOR_COUNT} GROS SUJETS (les plus importantes et "
-        f"intéressantes pour le public) et {VRAC_COUNT} news EN VRAC (plus courtes, mais à mentionner). "
+        f"intéressantes pour le public) et {VRAC_COUNT} ÉPLUCHURES (news plus courtes, mais à mentionner). "
         "Ne prends jamais deux news qui racontent la même histoire. Varie les jeux.\n"
         "Réponds UNIQUEMENT avec ce JSON, sans autre texte :\n"
         '{"major": [{"id": "n1", "why": "raison en 8 mots max"}], "vrac": [{"id": "n2", "why": "..."}]}\n\n'

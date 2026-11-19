@@ -226,12 +226,12 @@ def export_hebdo(
             except Exception as e:
                 (item_dir / "erreur_dl.txt").write_text(str(e), encoding="utf-8")
 
-    script_lines.append("\n## ⚡ NEWS EN VRAC\n")
-    desc_lines.append("XX:XX - News en vrac")
+    script_lines.append("\n## ⚡ LES ÉPLUCHURES\n")
+    desc_lines.append("XX:XX - Les épluchures")
     for item in vracs:
         script_lines.append(f"- **{item['title']}** ({item['source']}) -> {item['url']}")
         script_lines.append(f"  > {item['summary'][:200]}...\n")
-        links_lines.append(f"- [Vrac] {item['title']} : {item['url']}")
+        links_lines.append(f"- [Épluchure] {item['title']} : {item['url']}")
 
     (export_dir / "script_episode.md").write_text("\n".join(script_lines), encoding="utf-8")
     (export_dir / "description_youtube.txt").write_text(

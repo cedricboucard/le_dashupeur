@@ -15,7 +15,7 @@ from db import (add_x_pick, get_all_news, get_conn, get_news, get_x_picks, init_
 from engine import export_hebdo, fetch_all_feeds, parse_published
 from xposts import TWEET_MAX, build_tweet, tweet_length
 
-STATUS_LABELS = {"major": "🔥 gros sujet", "vrac": "⚡ en vrac", "inbox": "📥 à trier", "ignored": "🗑️ ignorée"}
+STATUS_LABELS = {"major": "🔥 gros sujet", "vrac": "⚡ épluchure", "inbox": "📥 à trier", "ignored": "🗑️ ignorée"}
 
 mcp = MCPServer(
     name="le-dashupeur",
@@ -23,7 +23,7 @@ mcp = MCPServer(
     instructions=(
         "Le Dashupeur est la régie d'actualité gaming d'une chaîne YouTube française (émission hebdomadaire « On épluche l'actu », "
         "style Dashup : MMO, free-to-play, bêtas, annonces, sorties, fermetures). Les news viennent de flux RSS "
-        "(presse, YouTube, Steam). Statuts : inbox (à trier), major (gros sujet), vrac (news en vrac), ignored. "
+        "(presse, YouTube, Steam). Statuts : inbox (à trier), major (gros sujet), vrac (épluchures : news courtes), ignored. "
         "L'Espace X est une sélection indépendante pour des tweets en français. Réponds à l'utilisateur en français."
     ),
 )
@@ -110,11 +110,11 @@ def lire_news(news_id: str) -> dict:
 
 @mcp.tool(annotations=READ_ONLY)
 def etat_hebdo() -> dict:
-    """Ce qui est déjà prévu : gros sujets et news en vrac de l'épisode, et news de l'Espace X (avec leur tweet)."""
+    """Ce qui est déjà prévu : gros sujets et épluchures de l'épisode, et news de l'Espace X (avec leur tweet)."""
     picks = get_x_picks()
     return {
         "gros_sujets": [_brief(n, 0) for n in get_news(status="major")],
-        "en_vrac": [_brief(n, 0) for n in get_news(status="vrac")],
+        "epluchures": [_brief(n, 0) for n in get_news(status="vrac")],
         "espace_x": [_brief(n, 0) | {"tweet": n.get("x_tweet") or "(texte automatique)"} for n in picks],
         "a_trier": len(get_news(status="inbox")),
     }
@@ -122,7 +122,7 @@ def etat_hebdo() -> dict:
 
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=True))
 def classer_news(news_ids: list[str], statut: Literal["major", "vrac", "inbox", "ignored"]) -> str:
-    """Range des news : major = gros sujet de l'épisode, vrac = news en vrac, inbox = remettre à trier,
+    """Range des news : major = gros sujet de l'épisode, vrac = épluchure (news courte), inbox = remettre à trier,
     ignored = écarter. Rien n'est supprimé : tout reste modifiable dans l'app."""
     ok, missing = _existing_ids(news_ids)
     for news_id in ok:
@@ -174,12 +174,12 @@ def rediger_tweet(news_id: str, texte: str) -> dict:
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, openWorldHint=False))
 def generer_pack_hebdo() -> str:
     """Génère le pack de l'épisode (script, description YouTube avec chapitres, dossiers des gros sujets) à partir
-    des gros sujets et news en vrac actuels. Les trailers ne sont pas téléchargés ici (bouton dans l'app)."""
+    des gros sujets et épluchures actuels. Les trailers ne sont pas téléchargés ici (bouton dans l'app)."""
     majors, vracs = get_news(status="major"), get_news(status="vrac")
     if not majors and not vracs:
         raise ToolError("L'épisode est vide : classe d'abord des news en major ou vrac.")
     out = export_hebdo(majors, vracs, download_videos=False, ai_cfg=None)
-    return f"Pack généré dans {out} ({len(majors)} gros sujets, {len(vracs)} en vrac)."
+    return f"Pack généré dans {out} ({len(majors)} gros sujets, {len(vracs)} épluchures)."
 
 
 @mcp.prompt(title="Préparer On épluche l'actu")
@@ -190,7 +190,7 @@ def preparer_hebdo(gros_sujets: int = 10, en_vrac: int = 8) -> str:
         "1. Regarde ce qui est déjà prévu avec etat_hebdo.\n"
         "2. Si besoin, lance scanner_actualite, puis lis les news à trier des 7 derniers jours avec lister_news.\n"
         f"3. Choisis {gros_sujets} GROS SUJETS (les plus importants pour le public : MMO, free-to-play, bêtas, "
-        f"annonces majeures, sorties, fermetures) et {en_vrac} news EN VRAC. Jamais deux news sur la même histoire ; "
+        f"annonces majeures, sorties, fermetures) et {en_vrac} ÉPLUCHURES (news courtes). Jamais deux news sur la même histoire ; "
         "varie les jeux ; écarte les simples discussions Reddit et les guides.\n"
         "4. Montre-moi ta sélection (une ligne par news avec la raison) et attends mon accord.\n"
         "5. Après mon accord, applique-la avec classer_news (major puis vrac)."

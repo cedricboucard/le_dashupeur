@@ -156,7 +156,7 @@ fun ActusScreen(
               color = OnSurface,
             )
             Text(
-              text = "${state.inboxItems.size} à trier · 🔥 ${state.majorItems.size} gros · ⚡ ${state.vracItems.size} vrac",
+              text = "${state.inboxItems.size} à trier · 🔥 ${state.majorItems.size} gros · ⚡ ${state.vracItems.size} épluch.",
               style = MaterialTheme.typography.bodySmall,
               color = OnSurfaceVariant,
             )
@@ -474,7 +474,7 @@ private fun NewsTriageCard(
           ) {
             Icon(Icons.Rounded.Bolt, contentDescription = null, tint = Tertiary, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(4.dp))
-            Text("En Vrac", style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp), color = Tertiary)
+            Text("Épluchure", style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp), color = Tertiary)
           }
         }
         Surface(

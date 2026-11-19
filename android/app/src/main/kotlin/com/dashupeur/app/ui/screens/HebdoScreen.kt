@@ -147,7 +147,7 @@ fun HebdoScreen(
                 )
               }
               Text(
-                text = "• ${state.vracItems.size} Vrac",
+                text = "• ${state.vracItems.size} Épluchures",
                 style = MaterialTheme.typography.labelMedium,
                 color = OnSurfaceVariant,
               )
@@ -200,13 +200,13 @@ fun HebdoScreen(
         }
       }
 
-      // News en Vrac Section
+      // Épluchures Section
       item {
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
           Icon(Icons.Rounded.Bolt, contentDescription = null, tint = Tertiary, modifier = Modifier.size(18.dp))
           Text(
-            text = "NEWS EN VRAC",
+            text = "LES ÉPLUCHURES",
             style = MaterialTheme.typography.labelMedium,
             color = OnSurface,
             fontWeight = FontWeight.Bold,
@@ -218,7 +218,7 @@ fun HebdoScreen(
         item {
           Surface(color = SurfaceContainerLow, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
             Text(
-              text = "Aucune brève en vrac pour le moment.",
+              text = "Aucune épluchure pour le moment.",
               style = MaterialTheme.typography.bodySmall,
               color = Outline,
               modifier = Modifier.padding(14.dp),

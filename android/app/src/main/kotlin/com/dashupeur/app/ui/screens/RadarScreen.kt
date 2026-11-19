@@ -426,7 +426,7 @@ private fun RadarGameCard(
               Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = Secondary, modifier = Modifier.size(18.dp))
               Spacer(Modifier.width(6.dp))
               Text(
-                text = if (hebdoStatus == "major") "Ajouté aux Gros Sujets" else "Ajouté en Vrac",
+                text = if (hebdoStatus == "major") "Ajouté aux Gros Sujets" else "Ajouté aux Épluchures",
                 style = MaterialTheme.typography.labelLarge,
                 color = Secondary,
               )
@@ -464,7 +464,7 @@ private fun RadarGameCard(
               ) {
                 Icon(Icons.Rounded.Bolt, contentDescription = null, tint = Tertiary, modifier = Modifier.size(17.dp))
                 Spacer(Modifier.width(5.dp))
-                Text("En Vrac", style = MaterialTheme.typography.labelLarge, color = Tertiary)
+                Text("Épluchure", style = MaterialTheme.typography.labelLarge, color = Tertiary)
               }
             }
           }

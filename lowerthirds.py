@@ -138,7 +138,7 @@ def render_lower_third(
 
     title : texte principal (2 lignes au plus, la police rétrécit si besoin).
     subtitle : ligne secondaire (source, nom du jeu, date…), facultative.
-    kicker : petite étiquette au-dessus (« GROS SUJET », « EN VRAC », « SORTIE STEAM »…), facultative.
+    kicker : petite étiquette au-dessus (« GROS SUJET », « ÉPLUCHURE », « SORTIE STEAM »…), facultative.
     """
     W, H = size
     k = W / 1920  # toutes les mesures sont pensées en 1080p puis mises à l'échelle
@@ -268,7 +268,7 @@ def save_episode_lower_thirds(export_dir: Path, majors: list[dict], vracs: list[
     out = export_dir / "bandeaux"
     out.mkdir(parents=True, exist_ok=True)
     n = 0
-    for kicker, items in (("Gros sujet", majors), ("En vrac", vracs)):
+    for kicker, items in (("Gros sujet", majors), ("Épluchure", vracs)):
         for item in items:
             n += 1
             img = render_lower_third(item["title"], item.get("source", ""), kicker, style, size)

@@ -527,7 +527,7 @@ private fun TrendGameCard(
             Icon(Icons.Rounded.CheckCircle, contentDescription = null, tint = Secondary, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
             Text(
-              text = if (hebdoStatus == "major") "Dans Gros Sujets" else "Dans News en Vrac",
+              text = if (hebdoStatus == "major") "Dans Gros Sujets" else "Dans les Épluchures",
               style = MaterialTheme.typography.labelLarge,
               color = Secondary,
             )
@@ -565,7 +565,7 @@ private fun TrendGameCard(
             ) {
               Icon(Icons.Rounded.Bolt, contentDescription = null, tint = Tertiary, modifier = Modifier.size(16.dp))
               Spacer(Modifier.width(4.dp))
-              Text("En Vrac", style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp), color = Tertiary)
+              Text("Épluchure", style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.sp), color = Tertiary)
             }
           }
         }

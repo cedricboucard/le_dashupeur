@@ -208,7 +208,7 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
       if (title != null) {
         val label = when (newStatus) {
           "major" -> "Gros Sujets"
-          "vrac" -> "News en Vrac"
+          "vrac" -> "Épluchures"
           "inbox" -> "Boîte de réception"
           else -> "Ignorés"
         }
@@ -268,7 +268,7 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
     viewModelScope.launch {
       RadarRepository.sendToHebdo(db, item, status)
       reloadNewsFromDb()
-      val where = if (status == "major") "Gros Sujets" else "News en Vrac"
+      val where = if (status == "major") "Gros Sujets" else "Épluchures"
       _state.update { it.copy(flashMessage = "« ${item.title} » ajouté aux $where de l'émission.") }
     }
   }
@@ -328,7 +328,7 @@ class DashupeurViewModel(app: Application) : AndroidViewModel(app) {
     viewModelScope.launch {
       TrendsRepository.sendTrendToHebdo(db, game, _state.value.trendWindowHours, status)
       reloadNewsFromDb()
-      val where = if (status == "major") "Gros Sujets" else "News en Vrac"
+      val where = if (status == "major") "Gros Sujets" else "Épluchures"
       _state.update { it.copy(flashMessage = "« ${game.name} » ajouté aux $where de l'émission.") }
     }
   }

@@ -104,7 +104,7 @@ x_pick_ids = {n["id"] for n in x_picks}
 
 st.markdown(
     f"📥 **{len(inbox_items)}** à trier · 🔥 **{len(major_items)}** gros sujet(s) · "
-    f"⚡ **{len(vrac_items)}** en vrac · 🐦 **{len(x_picks)}** pour X"
+    f"⚡ **{len(vrac_items)}** épluchures · 🐦 **{len(x_picks)}** pour X"
 )
 
 # Libellés fixes + key : l'onglet ouvert reste le même après un clic
@@ -132,7 +132,7 @@ def inbox_card(item: dict):
             if st.button("🔥 Gros Sujet", key=f"maj_{item['id']}", use_container_width=True):
                 update_status(item["id"], "major")
                 st.rerun()
-            if st.button("⚡ En Vrac", key=f"vrac_{item['id']}", use_container_width=True):
+            if st.button("⚡ Épluchure", key=f"vrac_{item['id']}", use_container_width=True):
                 update_status(item["id"], "vrac")
                 st.rerun()
             if st.button("🗑️ Ignorer", key=f"ign_{item['id']}", use_container_width=True):
@@ -188,7 +188,7 @@ def render_proposal(proposal: dict):
     by = "🤖 l'IA" if proposal["by"] == "ia" else "📊 le score et la fraîcheur"
     st.caption(f"Proposition faite par {by}. Décoche ce que tu ne veux pas, puis valide.")
     col_p_maj, col_p_vrac = st.columns(2)
-    for col, kind, title in ((col_p_maj, "major", "🔥 Gros sujets"), (col_p_vrac, "vrac", "⚡ En vrac")):
+    for col, kind, title in ((col_p_maj, "major", "🔥 Gros sujets"), (col_p_vrac, "vrac", "⚡ Épluchures")):
         with col:
             st.markdown(f"**{title} ({len(proposal[kind])})**")
             for entry in proposal[kind]:
@@ -212,7 +212,7 @@ def render_proposal(proposal: dict):
                     counts[kind] += 1
         st.session_state.pop("hebdo_proposal", None)
         st.session_state["hebdo_flash"] = (
-            f"✅ {counts['major']} gros sujet(s) et {counts['vrac']} news en vrac ajoutés à l'émission."
+            f"✅ {counts['major']} gros sujet(s) et {counts['vrac']} épluchure(s) ajoutés à l'émission."
         )
         st.rerun()
     if col_cancel.button("✖️ Annuler", use_container_width=True):
@@ -224,7 +224,7 @@ with tab_hebdo:
     with st.container(border=True):
         st.markdown("#### 🤖 Proposition automatique")
         st.caption(
-            "Choisit 10 gros sujets et 8 news en vrac dans ta boîte de réception (news de la semaine, sans doublons). "
+            "Choisit 10 gros sujets et 8 épluchures dans ta boîte de réception (news de la semaine, sans doublons). "
             + ("L'IA de la barre latérale fait le choix." if ai_ready
                else "Sans IA activée dans la barre latérale, le choix se fait au score et à la fraîcheur.")
         )
@@ -256,7 +256,7 @@ with tab_hebdo:
                     st.rerun()
 
     with col_vrac:
-        st.subheader("⚡ News en Vrac")
+        st.subheader("⚡ Les épluchures")
         for item in vrac_items:
             with st.container(border=True):
                 st.markdown(f"**{item['title']}**")
@@ -299,7 +299,7 @@ with tab_hebdo:
             title, subtitle = title.rsplit(" - ", 1)
         return {"Étiquette": kicker, "Titre": title, "Sous-titre": subtitle}
 
-    lt_rows = [lower_third_row(i, "Gros sujet") for i in major_items] + [lower_third_row(i, "En vrac") for i in vrac_items]
+    lt_rows = [lower_third_row(i, "Gros sujet") for i in major_items] + [lower_third_row(i, "Épluchure") for i in vrac_items]
     if not lt_rows:
         lt_rows = [{"Étiquette": "", "Titre": "", "Sous-titre": ""}]
     col_style, col_size = st.columns(2)
@@ -406,13 +406,13 @@ def render_radar_item(item: dict, section: str, in_hebdo: dict):
         with col_btn:
             status = in_hebdo.get(news_id)
             if status:
-                st.success("✅ Gros sujet" if status == "major" else "✅ En vrac")
+                st.success("✅ Gros sujet" if status == "major" else "✅ Épluchure")
                 return
-            for label, new_status in (("🔥 Gros Sujet", "major"), ("⚡ En Vrac", "vrac")):
+            for label, new_status in (("🔥 Gros Sujet", "major"), ("⚡ Épluchure", "vrac")):
                 if st.button(label, key=f"radar_{new_status}_{section}_{news_id}", use_container_width=True):
                     with st.spinner("Ajout à l'émission..."):
                         send_to_hebdo(item, new_status)
-                    where = "gros sujets" if new_status == "major" else "news en vrac"
+                    where = "gros sujets" if new_status == "major" else "épluchures"
                     st.session_state["radar_flash"] = f"« {item['title']} » ajouté aux {where} de l'émission."
                     st.rerun()
 
@@ -440,7 +440,7 @@ if tab_radar.open:
 
         col_info, col_refresh = st.columns([4, 1])
         col_info.caption(
-            "Jeux gratuits et Free-to-Play en temps réel. Un clic sur 🔥 Gros Sujet ou ⚡ En Vrac "
+            "Jeux gratuits et Free-to-Play en temps réel. Un clic sur 🔥 Gros Sujet ou ⚡ Épluchure "
             "envoie le jeu dans le conducteur de l'émission (script + trailer)."
         )
         if col_refresh.button("🔄 Actualiser", use_container_width=True):
@@ -517,12 +517,12 @@ def render_trend_item(game: dict, window_hours: int, in_hebdo: dict):
         with col_btn:
             status = in_hebdo.get(news_id)
             if status:
-                st.success("✅ Gros sujet" if status == "major" else "✅ En vrac")
+                st.success("✅ Gros sujet" if status == "major" else "✅ Épluchure")
                 return
-            for label, new_status in (("🔥 Gros Sujet", "major"), ("⚡ En Vrac", "vrac")):
+            for label, new_status in (("🔥 Gros Sujet", "major"), ("⚡ Épluchure", "vrac")):
                 if st.button(label, key=f"trend_{new_status}_{news_id}", use_container_width=True):
                     send_to_hebdo(item, new_status)
-                    where = "gros sujets" if new_status == "major" else "news en vrac"
+                    where = "gros sujets" if new_status == "major" else "épluchures"
                     st.session_state["trends_flash"] = f"« {game['name']} » ajouté aux {where} de l'émission."
                     st.rerun()
 

@@ -6,7 +6,7 @@
 
 **Régie d'actualité gaming** : une petite application web qui fait la veille de l'actu jeu vidéo à ta place, t'aide à trier les news et prépare tout le nécessaire pour enregistrer une émission hebdomadaire sur YouTube : **🧅 On épluche l'actu**, sur la chaîne Onion Burger.
 
-Le Dashupeur récupère les flux RSS de plusieurs sites gaming, donne un score de pertinence à chaque news selon des mots-clés, puis te laisse choisir les gros sujets et les news en vrac. En un clic, il génère :
+Le Dashupeur récupère les flux RSS de plusieurs sites gaming, donne un score de pertinence à chaque news selon des mots-clés, puis te laisse choisir les gros sujets et les épluchures (les news plus courtes). En un clic, il génère :
 
 - 📝 le **script** de l'émission (en Markdown) ;
 - 📺 la **description YouTube** avec les chapitres et les liens des sources ;
@@ -29,14 +29,14 @@ Tout reste sur ton ordinateur : les news sont stockées dans une base SQLite loc
 |---|---|
 | 📡 **Veille RSS** | Scan de 28 sources : presse MMO et jeu vidéo (MassivelyOP, MMORPG.com, Jeuxvideo.com, Gamekult, ActuGaming, PC Gamer, PCGamesN, Rock Paper Shotgun, Gematsu, Reddit r/MMORPG), **recherches Google News** (versions PC, lancements mondiaux et préinscriptions, bêtas MMO et gacha, playtests et accès anticipé, fermetures, Com2uS, MMO et gacha en français), **chaînes YouTube** de trailers et de jeux (IGN, GameSpot, GameTrailers, PlayStation, Xbox, chaînes de trailers indés, The First Descendant) et **actualités Steam** des jeux suivis (annonces, playtests, patch notes : Under a Rock, The First Descendant, ARES: The Iron Vanguard). Le scan ajoute aussi les **nouvelles sorties Steam** des 3 derniers jours : les nouveautés populaires mises en avant par Steam et les nouveaux free-to-play qui ont au moins 50 joueurs connectés. Avec un `STEAM_ID` dans `.env`, il suit aussi ta **liste de souhaits Steam** : les annonces des 7 derniers jours de chaque jeu (playtests, dates de sortie, week-ends gratuits) arrivent dans la boîte de réception avec un bonus de pertinence. Les doublons sont ignorés automatiquement. Des liens vers **GlobeNewswire** (communiqués « video game » et « MMORPG ») permettent une veille manuelle. |
 | 🎯 **Score de pertinence** | Chaque news gagne des points selon les mots-clés trouvés (MMORPG, free-to-play, bêta, shutdown…). Les news à 15 points ou plus sont marquées 🔥. |
-| 📥 **Boîte de réception** | Filtre par score minimum ou par mot-clé, puis classe chaque news en **🔥 Gros Sujet**, **⚡ En Vrac** ou **🗑️ Ignorer**. |
-| 🤖 **Proposition automatique** | Un bouton choisit 10 gros sujets et 8 news en vrac (par l'IA, ou au score sans IA), sans doublons, à relire et valider. |
+| 📥 **Boîte de réception** | Filtre par score minimum ou par mot-clé, puis classe chaque news en **🔥 Gros Sujet**, **⚡ Épluchure** ou **🗑️ Ignorer**. |
+| 🤖 **Proposition automatique** | Un bouton choisit 10 gros sujets et 8 épluchures (par l'IA, ou au score sans IA), sans doublons, à relire et valider. |
 | 🎬 **Pack de l'épisode** | Génère un dossier daté avec le script, la description YouTube (chapitres + sources) et un sous-dossier par gros sujet. |
 | 🎞️ **Trailers** | Télécharge le premier trailer officiel trouvé sur YouTube pour chaque gros sujet (jusqu'en 1080p). |
 | 🤖 **Résumés IA** | Traduit et résume chaque gros sujet en 3 points percutants, prêts pour le script vidéo. |
-| 🎬 **Bandeaux (Lower Thirds)** | Dans l'onglet de l'émission : un bandeau PNG transparent par news de l'épisode (titre, sous-titre et étiquette « Gros sujet » / « En vrac », modifiables dans un tableau), en 1080p ou 4K, en 3 styles. Aperçu sur fond de test, puis téléchargement d'un bandeau ou de tous en ZIP, prêts à poser sur la timeline. Police Lato fournie (licence OFL). |
+| 🎬 **Bandeaux (Lower Thirds)** | Dans l'onglet de l'émission : un bandeau PNG transparent par news de l'épisode (titre, sous-titre et étiquette « Gros sujet » / « Épluchure », modifiables dans un tableau), en 1080p ou 4K, en 3 styles. Aperçu sur fond de test, puis téléchargement d'un bandeau ou de tous en ZIP, prêts à poser sur la timeline. Police Lato fournie (licence OFL). |
 | 🎁 **Radar Jeux Gratuits & F2P** | En temps réel : jeux gratuits de l'**Epic Games Store** (maintenant + semaine prochaine), jeux/DLC/bêtas offerts via **GamerPower** (Steam, GOG, Epic, Itch.io…) et nouveaux **Free-to-Play Steam** classés par joueurs connectés en direct. |
-| 🔗 **Pont vers l'émission** | Depuis le Radar, **🔥 Gros Sujet** ou **⚡ En Vrac** envoie le jeu dans le conducteur, avec son résumé (valeur, date de fin de l'offre, joueurs en ligne) pour le script et le trailer. |
+| 🔗 **Pont vers l'émission** | Depuis le Radar, **🔥 Gros Sujet** ou **⚡ Épluchure** envoie le jeu dans le conducteur, avec son résumé (valeur, date de fin de l'offre, joueurs en ligne) pour le script et le trailer. |
 | 🐦 **Espace X** | Pioche librement des news (sans toucher à l'émission) et obtiens des **tweets séparés** ou un **thread** numéroté (1/5, 2/5…) avec lien de la source. Compteur de caractères calculé comme X (lien = 23, emoji = 2), retouche du texte, rédaction en français par IA (optionnel), bouton 📋 pour copier et **𝕏 Ouvrir dans X** avec le tweet pré-rempli. |
 | 📈 **Détecteur de tendances** | Relevé automatique toutes les 3 h des spectateurs **Twitch**, des joueurs **Steam** et des vues **YouTube** de chaque jeu. Classement « 🚀 Ça monte » par croissance sur 24 h ou 7 jours, toutes plateformes confondues ou **une seule** (Twitch, YouTube ou Steam), repérage des 🆕 nouveaux venus, mini-courbes, et envoi direct vers l'émission. |
 
@@ -83,16 +83,16 @@ L'application s'ouvre dans ton navigateur sur **http://localhost:8501**.
 2. **Trier** : dans l'onglet **📥 Boîte de réception**, classe chaque news. Chaque news affiche sa date de publication (« aujourd'hui », « il y a 3 jours »…). Le curseur « Score de pertinence minimum » et la recherche par mot-clé t'aident à aller à l'essentiel.
 3. **Piocher dans le Radar** (optionnel) : dans l'onglet **🎁 Radar Jeux Gratuits & F2P**, parcours les sous-onglets Epic Games Store, GamerPower et Steam Free-to-Play, puis envoie les jeux qui t'intéressent dans l'émission. Les données sont gardées 10 minutes ; **🔄 Actualiser** force une nouvelle interrogation.
    Dans l'onglet **📈 Tendances**, repère les jeux qui décollent et envoie-les aussi dans l'émission.
-4. **Vérifier** : dans l'onglet **🧅 On épluche l'actu**, relis ta sélection. Pour aller plus vite, **🤖 Proposer l'épisode** choisit à ta place 10 gros sujets et 8 news en vrac (voir ci-dessous). Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
+4. **Vérifier** : dans l'onglet **🧅 On épluche l'actu**, relis ta sélection. Pour aller plus vite, **🤖 Proposer l'épisode** choisit à ta place 10 gros sujets et 8 épluchures (voir ci-dessous). Le bouton **↩️ Retirer** renvoie une news dans la boîte de réception.
 5. **Générer** : coche si besoin le téléchargement des trailers, puis clique sur **🚀 Générer le pack de l'épisode**.
-6. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets, news en vrac et news piochées pour X sont conservés.
+6. **Faire le ménage** : **🧹 Vider la boîte de réception** supprime les news non triées et ignorées. Tes gros sujets, épluchures et news piochées pour X sont conservés.
 
 ### 🤖 Proposition automatique de l'épisode
 
 Dans l'onglet **🧅 On épluche l'actu**, le bouton **🤖 Proposer l'épisode** prépare une sélection complète à partir de ta boîte de réception :
 
 - il garde les news de la semaine, retire les doublons (la même histoire racontée par plusieurs sites) et présélectionne les 80 plus prometteuses (score + fraîcheur) ;
-- **avec l'IA activée** dans la barre latérale, c'est elle qui choisit **10 gros sujets** et **8 news en vrac**, avec une courte raison pour chacun. Si elle en rend moins, la liste est complétée au score ;
+- **avec l'IA activée** dans la barre latérale, c'est elle qui choisit **10 gros sujets** et **8 épluchures**, avec une courte raison pour chacun. Si elle en rend moins, la liste est complétée au score ;
 - **sans IA**, le choix se fait au score et à la fraîcheur, avec au plus 3 gros sujets par source.
 
 Tout arrive coché : décoche ce que tu ne veux pas, puis **✅ Valider la proposition**. Rien n'est déplacé avant ta validation.
@@ -197,8 +197,8 @@ Plutôt que de payer une clé API, utilise **ton abonnement Claude** (ou Gemini)
 | `scanner_actualite` | Récupère les dernières news de tous les flux |
 | `lister_news` | Liste les news (par statut, période, mot-clé, score) |
 | `lire_news` | Détail complet d'une news |
-| `etat_hebdo` | Gros sujets, news en vrac et Espace X déjà prévus |
-| `classer_news` | Range des news en gros sujet, vrac, à trier ou ignorée |
+| `etat_hebdo` | Gros sujets, épluchures et Espace X déjà prévus |
+| `classer_news` | Range des news en gros sujet, épluchure, à trier ou ignorée |
 | `gerer_espace_x` | Ajoute ou retire des news de l'Espace X |
 | `rediger_tweet` | Enregistre un tweet rédigé par l'IA (affiché « ✍️ rédigé par l'IA » dans l'Espace X) |
 | `generer_pack_hebdo` | Génère le pack de l'épisode (sans les trailers) |

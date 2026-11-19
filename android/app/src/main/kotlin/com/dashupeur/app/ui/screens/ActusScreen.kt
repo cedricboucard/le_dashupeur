@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
@@ -268,31 +270,37 @@ fun ActusScreen(
           }
         }
 
-        // Veille manuelle : sites qu'on ne peut pas scanner automatiquement
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-          Text(
-            text = "GlobeNewswire :",
-            style = MaterialTheme.typography.labelMedium,
-            color = OnSurfaceVariant,
-          )
-          Config.MANUAL_WATCH_LINKS.forEach { (label, url) ->
-            Surface(
-              color = SurfaceContainerLow,
-              shape = RoundedCornerShape(8.dp),
-              modifier = Modifier.clickable {
-                runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
-              },
-            ) {
-              Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+        // Veille manuelle : sites qu'on ne peut pas (ou ne veut pas) scanner automatiquement
+        listOf(
+          "GlobeNewswire :" to Config.MANUAL_WATCH_LINKS,
+          "MMO Asie :" to Config.ASIA_WATCH_LINKS,
+        ).forEach { (groupLabel, links) ->
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.horizontalScroll(rememberScrollState()),
+          ) {
+            Text(
+              text = groupLabel,
+              style = MaterialTheme.typography.labelMedium,
+              color = OnSurfaceVariant,
+            )
+            links.forEach { (label, url) ->
+              Surface(
+                color = SurfaceContainerLow,
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier.clickable {
+                  runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
+                },
               ) {
-                Text(label, style = MaterialTheme.typography.labelMedium, color = OnSurface)
-                Spacer(Modifier.width(4.dp))
-                Icon(Icons.Rounded.OpenInNew, contentDescription = null, tint = Outline, modifier = Modifier.size(14.dp))
+                Row(
+                  verticalAlignment = Alignment.CenterVertically,
+                  modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                ) {
+                  Text(label, style = MaterialTheme.typography.labelMedium, color = OnSurface)
+                  Spacer(Modifier.width(4.dp))
+                  Icon(Icons.Rounded.OpenInNew, contentDescription = null, tint = Outline, modifier = Modifier.size(14.dp))
+                }
               }
             }
           }

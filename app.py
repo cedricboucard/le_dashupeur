@@ -6,6 +6,7 @@ import streamlit as st
 from db import (add_x_pick, clear_inbox, clear_x_picks, get_all_news, get_news, get_x_picks, init_db, move_x_pick,
                 remove_x_pick, update_status)
 from curator import propose_by_score, propose_with_ai
+from config import ASIA_WATCH_LINKS
 from engine import export_hebdo, fetch_all_feeds, parse_published, separate_topic
 import lowerthirds
 import wishlist
@@ -72,6 +73,11 @@ with st.sidebar:
                          use_container_width=True, help="Communiqués contenant « video game »")
     gnw_col2.link_button("⚔️ MMORPG", "https://www.globenewswire.com/en/search/keyword/MMORPG",
                          use_container_width=True, help="Communiqués contenant « MMORPG »")
+
+    # MMO coréens et asiatiques pas encore annoncés chez nous : à suivre à la main
+    st.caption("🌏 Veille manuelle : MMO asiatiques (sorties Corée, Chine, Japon…)")
+    for label, url, tip in ASIA_WATCH_LINKS:
+        st.link_button(label, url, use_container_width=True, help=tip)
 
     if not wishlist.steam_id():
         st.caption("⭐ Liste de souhaits Steam non suivie : ajoute `STEAM_ID=<ton SteamID64>` dans le fichier "

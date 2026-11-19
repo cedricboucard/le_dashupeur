@@ -49,13 +49,20 @@ RSS_FEEDS = {
     "Steam · ARES: The Iron Vanguard": STEAM_NEWS_FEED.format(5366290),
 }
 
-# Mots-clés qui boostent le score de pertinence d'une news
+# Veille manuelle des MMO coréens et asiatiques (pas scannés : l'émission reste centrée sur les sorties locales)
+ASIA_WATCH_LINKS = [
+    ("▶️ IceXgame", "https://www.youtube.com/@IceXgame/videos", "Chaîne YouTube : présentations de MMO asiatiques"),
+    ("📰 Inven", "https://www.invenglobal.com/", "Inven Global : actu du jeu vidéo coréen, en anglais"),
+    ("📰 MMO Culture", "https://mmoculture.com/", "MMO Culture : sorties et bêtas des MMO asiatiques, en anglais"),
+]
+
 # Sujets rangés à part dans la boîte de réception (pour ne pas noyer les news MMO / F2P).
 # Une news y va si son titre correspond à l'une des expressions régulières (sans tenir compte des majuscules).
 SEPARATE_TOPICS = {
     "🚗 GTA": [r"\bgta", r"grand theft auto", r"\brockstar games\b"],
 }
 
+# Mots-clés qui boostent le score de pertinence d'une news
 KEYWORDS_WEIGHTS = {
     "mmorpg": 15,
     "mmo": 12,

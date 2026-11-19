@@ -79,6 +79,12 @@ object Config {
     "🎮 Jeu vidéo" to "https://www.globenewswire.com/en/search/keyword/video%20game",
     "⚔️ MMORPG" to "https://www.globenewswire.com/en/search/keyword/MMORPG",
   )
+  // MMO coréens et asiatiques : suivis à la main, pas scannés (l'émission reste centrée sur les sorties locales)
+  val ASIA_WATCH_LINKS: List<Pair<String, String>> = listOf(
+    "▶️ IceXgame" to "https://www.youtube.com/@IceXgame/videos",
+    "📰 Inven" to "https://www.invenglobal.com/",
+    "📰 MMO Culture" to "https://mmoculture.com/",
+  )
   /**
    * Sujets rangés à part dans la boîte de réception (pour ne pas noyer les news MMO / F2P) :
    * une news y va si son titre correspond à l'une des expressions (sans tenir compte des majuscules).

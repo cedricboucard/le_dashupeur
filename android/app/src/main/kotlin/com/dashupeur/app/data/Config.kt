@@ -6,7 +6,6 @@ object Config {
     // --- MMO ---
     "MassivelyOP (MMO)" to "https://massivelyop.com/feed/",
     "MMORPG.com" to "https://www.mmorpg.com/rss",
-    "Reddit r/MMORPG" to "https://www.reddit.com/r/MMORPG/hot.rss",
 
     // --- Presse jeu vidéo ---
     "ActuGaming" to "https://www.actugaming.net/feed/",

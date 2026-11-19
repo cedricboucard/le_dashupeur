@@ -12,7 +12,6 @@ RSS_FEEDS = {
     # --- MMO ---
     "MassivelyOP (MMO)": "https://massivelyop.com/feed/",
     "MMORPG.com": "https://www.mmorpg.com/rss",
-    "Reddit r/MMORPG": "https://www.reddit.com/r/MMORPG/hot.rss",
 
     # --- Presse jeu vidéo ---
     "ActuGaming": "https://www.actugaming.net/feed/",

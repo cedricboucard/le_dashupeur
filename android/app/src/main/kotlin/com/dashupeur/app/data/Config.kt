@@ -80,5 +80,18 @@ object Config {
     "🎮 Jeu vidéo" to "https://www.globenewswire.com/en/search/keyword/video%20game",
     "⚔️ MMORPG" to "https://www.globenewswire.com/en/search/keyword/MMORPG",
   )
+  /**
+   * Sujets rangés à part dans la boîte de réception (pour ne pas noyer les news MMO / F2P) :
+   * une news y va si son titre correspond à l'une des expressions (sans tenir compte des majuscules).
+   */
+  val SEPARATE_TOPICS: Map<String, List<Regex>> = mapOf(
+    "🚗 GTA" to listOf("""\bgta""", "grand theft auto", """\brockstar games\b""")
+      .map { Regex(it, RegexOption.IGNORE_CASE) },
+  )
+
+  /** Sujet « à part » de la news (ex. « 🚗 GTA ») d'après son titre, ou null. */
+  fun separateTopic(title: String): String? =
+    SEPARATE_TOPICS.entries.firstOrNull { (_, patterns) -> patterns.any { it.containsMatchIn(title) } }?.key
+
   const val USER_AGENT = "LeDashupeur/1.0 (+https://github.com/cedricboucard/le_dashupeur)"
 }

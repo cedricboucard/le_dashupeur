@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.DeleteOutline
 import androidx.compose.material.icons.rounded.DeleteSweep
@@ -43,7 +45,10 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -105,6 +110,31 @@ fun ActusScreen(
       }
       sorted + undated
     }
+  }
+
+  // Les sujets « à part » (ex. GTA) sont regroupés dans une section repliable pour ne pas noyer le reste
+  val (topicGroups, mainItems) = remember(filtered) {
+    val groups = linkedMapOf<String, MutableList<NewsItem>>()
+    val rest = mutableListOf<NewsItem>()
+    for (item in filtered) {
+      val topic = Config.separateTopic(item.title)
+      if (topic != null) groups.getOrPut(topic) { mutableListOf() }.add(item) else rest.add(item)
+    }
+    groups to rest
+  }
+  var expandedTopics by remember { mutableStateOf(setOf<String>()) }
+  val triageCard: @Composable (NewsItem) -> Unit = { item ->
+    NewsTriageCard(
+      item = item,
+      onOpenUrl = {
+        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url))) }
+      },
+      onMajor = { onUpdateStatus(item.id, "major", item.title) },
+      onVrac = { onUpdateStatus(item.id, "vrac", item.title) },
+      onIgnore = { onUpdateStatus(item.id, "ignored", item.title) },
+      inX = item.id in state.xPickIds,
+      onToggleX = { onTogglePick(item) },
+    )
   }
 
   LazyColumn(
@@ -286,19 +316,43 @@ fun ActusScreen(
         }
       }
     } else {
-      items(filtered, key = { it.id }) { item ->
-        NewsTriageCard(
-          item = item,
-          onOpenUrl = {
-            runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url))) }
-          },
-          onMajor = { onUpdateStatus(item.id, "major", item.title) },
-          onVrac = { onUpdateStatus(item.id, "vrac", item.title) },
-          onIgnore = { onUpdateStatus(item.id, "ignored", item.title) },
-          inX = item.id in state.xPickIds,
-          onToggleX = { onTogglePick(item) },
-        )
+      for ((topic, topicItems) in topicGroups) {
+        // Une recherche ouvre la section, comme sur la version web
+        val expanded = topic in expandedTopics || state.searchQuery.isNotBlank()
+        item(key = "topic_$topic") {
+          TopicHeader(
+            label = "$topic · ${topicItems.size} news rangée(s) à part",
+            expanded = expanded,
+            onToggle = { expandedTopics = if (topic in expandedTopics) expandedTopics - topic else expandedTopics + topic },
+          )
+        }
+        if (expanded) {
+          items(topicItems, key = { it.id }) { item -> triageCard(item) }
+        }
       }
+      items(mainItems, key = { it.id }) { item -> triageCard(item) }
+    }
+  }
+}
+
+@Composable
+private fun TopicHeader(label: String, expanded: Boolean, onToggle: () -> Unit) {
+  Surface(
+    color = SurfaceContainerLow,
+    shape = RoundedCornerShape(12.dp),
+    modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle),
+  ) {
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+    ) {
+      Icon(
+        imageVector = if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
+        contentDescription = if (expanded) "Replier" else "Déplier",
+        tint = Outline,
+      )
+      Spacer(Modifier.width(8.dp))
+      Text(label, style = MaterialTheme.typography.labelLarge, color = OnSurface)
     }
   }
 }

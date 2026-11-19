@@ -9,7 +9,7 @@ import requests
 import yt_dlp
 from bs4 import BeautifulSoup
 
-from config import KEYWORDS_WEIGHTS, RSS_FEEDS, SHOW_NAME, USER_AGENT
+from config import KEYWORDS_WEIGHTS, RSS_FEEDS, SEPARATE_TOPICS, SHOW_NAME, USER_AGENT
 from db import upsert_news
 
 EXPORTS_DIR = Path(__file__).parent / "exports"
@@ -51,6 +51,14 @@ def entry_published_iso(entry) -> str:
     parsed = entry.get("published_parsed") or entry.get("updated_parsed")
     dt = parse_published(parsed) or parse_published(entry.get("published", ""))
     return dt.isoformat() if dt else ""
+
+
+def separate_topic(title: str) -> str | None:
+    """Sujet « à part » de la news (ex. « 🚗 GTA ») d'après son titre, ou None."""
+    for topic, patterns in SEPARATE_TOPICS.items():
+        if any(re.search(p, title, re.IGNORECASE) for p in patterns):
+            return topic
+    return None
 
 
 def score_article(title: str, summary: str) -> tuple[int, list[str]]:

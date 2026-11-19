@@ -6,7 +6,7 @@ import streamlit as st
 from db import (add_x_pick, clear_inbox, clear_x_picks, get_all_news, get_news, get_x_picks, init_db, move_x_pick,
                 remove_x_pick, update_status)
 from curator import propose_by_score, propose_with_ai
-from engine import export_hebdo, fetch_all_feeds, parse_published
+from engine import export_hebdo, fetch_all_feeds, parse_published, separate_topic
 import lowerthirds
 import wishlist
 from radar import _item, fetch_epic_free, fetch_gamerpower, fetch_steam_f2p, radar_news_id, send_to_hebdo
@@ -114,6 +114,37 @@ tab_inbox, tab_hebdo, tab_radar, tab_trends, tab_x = st.tabs(
     on_change="rerun",
 )
 
+
+def inbox_card(item: dict):
+    """Carte d'une news à trier, avec ses boutons de classement."""
+    with st.container(border=True):
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            badge = f"🔥 Score: {item['score']}" if item["score"] >= 15 else f"Score: {item['score']}"
+            st.markdown(f"**[{item['title']}]({item['url']})**")
+            st.caption(
+                f"🕒 {format_age(item['published'])} • {item['source']} • {badge} • "
+                f"Tags: `{item['tags'] or 'aucun'}`"
+            )
+            if item["summary"]:
+                st.write(item["summary"][:280] + ("..." if len(item["summary"]) > 280 else ""))
+        with col2:
+            if st.button("🔥 Gros Sujet", key=f"maj_{item['id']}", use_container_width=True):
+                update_status(item["id"], "major")
+                st.rerun()
+            if st.button("⚡ En Vrac", key=f"vrac_{item['id']}", use_container_width=True):
+                update_status(item["id"], "vrac")
+                st.rerun()
+            if st.button("🗑️ Ignorer", key=f"ign_{item['id']}", use_container_width=True):
+                update_status(item["id"], "ignored")
+                st.rerun()
+            if item["id"] in x_pick_ids:
+                st.caption("🐦 Dans l'Espace X")
+            elif st.button("🐦 Pour X", key=f"x_{item['id']}", use_container_width=True):
+                add_x_pick(item["id"])
+                st.rerun()
+
+
 # --- ONGLET 1 : TRI DES NEWS ---
 with tab_inbox:
     col_search, col_sort = st.columns([3, 1])
@@ -134,36 +165,22 @@ with tab_inbox:
         dated.sort(key=lambda n: parse_published(n["published"]), reverse=(sort_by == "🕒 Plus récentes"))
         filtered = dated + undated
 
-    if not filtered:
+    # Les sujets « à part » (ex. GTA) sont rangés dans leur propre section pour ne pas noyer le reste
+    by_topic: dict[str, list[dict]] = {}
+    main_items = []
+    for item in filtered:
+        topic = separate_topic(item["title"])
+        (by_topic.setdefault(topic, []) if topic else main_items).append(item)
+    for topic, topic_items in by_topic.items():
+        with st.expander(f"{topic} · {len(topic_items)} news rangée(s) à part", expanded=bool(search)):
+            for item in topic_items:
+                inbox_card(item)
+
+    if not main_items and not by_topic:
         st.info("Aucune news dans la boîte de réception. Clique sur 'Scanner l'actualité' à gauche !")
 
-    for item in filtered:
-        with st.container(border=True):
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                badge = f"🔥 Score: {item['score']}" if item["score"] >= 15 else f"Score: {item['score']}"
-                st.markdown(f"**[{item['title']}]({item['url']})**")
-                st.caption(
-                    f"🕒 {format_age(item['published'])} • {item['source']} • {badge} • "
-                    f"Tags: `{item['tags'] or 'aucun'}`"
-                )
-                if item["summary"]:
-                    st.write(item["summary"][:280] + ("..." if len(item["summary"]) > 280 else ""))
-            with col2:
-                if st.button("🔥 Gros Sujet", key=f"maj_{item['id']}", use_container_width=True):
-                    update_status(item["id"], "major")
-                    st.rerun()
-                if st.button("⚡ En Vrac", key=f"vrac_{item['id']}", use_container_width=True):
-                    update_status(item["id"], "vrac")
-                    st.rerun()
-                if st.button("🗑️ Ignorer", key=f"ign_{item['id']}", use_container_width=True):
-                    update_status(item["id"], "ignored")
-                    st.rerun()
-                if item["id"] in x_pick_ids:
-                    st.caption("🐦 Dans l'Espace X")
-                elif st.button("🐦 Pour X", key=f"x_{item['id']}", use_container_width=True):
-                    add_x_pick(item["id"])
-                    st.rerun()
+    for item in main_items:
+        inbox_card(item)
 
 # --- ONGLET 2 : PRÉPARATION DE L'ÉMISSION (On épluche l'actu) ---
 def render_proposal(proposal: dict):

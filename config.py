@@ -51,6 +51,12 @@ RSS_FEEDS = {
 }
 
 # Mots-clés qui boostent le score de pertinence d'une news
+# Sujets rangés à part dans la boîte de réception (pour ne pas noyer les news MMO / F2P).
+# Une news y va si son titre correspond à l'une des expressions régulières (sans tenir compte des majuscules).
+SEPARATE_TOPICS = {
+    "🚗 GTA": [r"\bgta", r"grand theft auto", r"\brockstar games\b"],
+}
+
 KEYWORDS_WEIGHTS = {
     "mmorpg": 15,
     "mmo": 12,

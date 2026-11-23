@@ -1,5 +1,6 @@
 import hashlib
 import re
+import time
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -72,6 +73,34 @@ def score_article(title: str, summary: str) -> tuple[int, list[str]]:
     return score, matched_tags
 
 
+# Google News refuse (erreur 429) les rafales de requêtes : on espace ses recherches
+# et on réessaie une fois après une pause si elle répond quand même 429.
+GOOGLE_NEWS_PAUSE = 2.0  # secondes entre deux recherches Google News
+RETRY_AFTER_429 = 8.0    # secondes d'attente avant le nouvel essai
+_last_google_request = 0.0
+
+
+def _get_feed(url: str, headers: dict) -> requests.Response:
+    """Télécharge un flux ; espace les requêtes Google News et réessaie une fois en cas de 429."""
+    global _last_google_request
+    is_google = "news.google.com" in url
+    for attempt in range(2):
+        if is_google:
+            wait = _last_google_request + GOOGLE_NEWS_PAUSE - time.monotonic()
+            if wait > 0:
+                time.sleep(wait)
+        resp = requests.get(url, headers=headers, timeout=10)
+        if is_google:
+            _last_google_request = time.monotonic()
+        if resp.status_code == 429 and attempt == 0:
+            retry_after = resp.headers.get("Retry-After", "")
+            time.sleep(min(float(retry_after), 30.0) if retry_after.isdigit() else RETRY_AFTER_429)
+            continue
+        resp.raise_for_status()
+        return resp
+    return resp
+
+
 def fetch_all_feeds() -> tuple[int, list[str]]:
     added = 0
     errors = []
@@ -79,8 +108,7 @@ def fetch_all_feeds() -> tuple[int, list[str]]:
 
     for source_name, feed_url in RSS_FEEDS.items():
         try:
-            resp = requests.get(feed_url, headers=headers, timeout=10)
-            resp.raise_for_status()
+            resp = _get_feed(feed_url, headers)
             parsed = feedparser.parse(resp.content)
 
             for entry in parsed.entries[:20]:

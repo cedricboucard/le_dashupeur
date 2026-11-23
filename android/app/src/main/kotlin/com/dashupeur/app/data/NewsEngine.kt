@@ -4,6 +4,7 @@ import android.content.Context
 import android.text.Html
 import android.util.Xml
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.xmlpull.v1.XmlPullParser
 import java.io.File
@@ -75,13 +76,38 @@ object NewsEngine {
     return score to matched
   }
 
+  // Google News refuse (HTTP 429) les rafales de requêtes : on espace ses recherches
+  // et on réessaie une fois après une pause si elle répond quand même 429.
+  private const val GOOGLE_NEWS_PAUSE_MS = 2000L
+  private const val RETRY_AFTER_429_MS = 8000L
+  private var lastGoogleRequest = 0L
+
+  private suspend fun fetchFeed(url: String): String {
+    val isGoogle = "news.google.com" in url
+    repeat(2) { attempt ->
+      if (isGoogle) {
+        val wait = lastGoogleRequest + GOOGLE_NEWS_PAUSE_MS - System.currentTimeMillis()
+        if (wait > 0) delay(wait)
+      }
+      try {
+        return HttpUtils.getText(url, timeoutMs = 10000)
+      } catch (e: IllegalStateException) {
+        if (e.message != "HTTP 429" || attempt == 1) throw e
+        delay(RETRY_AFTER_429_MS)
+      } finally {
+        if (isGoogle) lastGoogleRequest = System.currentTimeMillis()
+      }
+    }
+    error("HTTP 429")
+  }
+
   suspend fun fetchAllFeeds(db: DashupeurDb, steamId: String = ""): Pair<Int, List<String>> = withContext(Dispatchers.IO) {
     var added = 0
     val errors = mutableListOf<String>()
 
     for ((sourceName, feedUrl) in Config.RSS_FEEDS) {
       runCatching {
-        val xml = HttpUtils.getText(feedUrl, timeoutMs = 10000)
+        val xml = fetchFeed(feedUrl)
         val entries = parseRssOrAtom(xml).take(20)
         for (entry in entries) {
           if (entry.url.isBlank()) continue
